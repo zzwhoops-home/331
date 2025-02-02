@@ -58,13 +58,16 @@ def build_parents(lines):
     print("No solution")
 
 def print_path(parents):
+    # get current word and also create path list
     cur = target
     path = [cur]
 
+    # while we haven't reached the start, append the path
     while (cur != start):
         cur = parents[cur]
         path.append(cur)
 
+    # print out path backwards
     for i in range(len(path) - 1, -1, -1):
         print(path[i])
 
