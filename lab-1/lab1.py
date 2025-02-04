@@ -1,5 +1,3 @@
-import matplotlib
-import numpy
 import sys
 from PIL import Image
 
@@ -80,10 +78,43 @@ def process_img():
             pixel = pixels[x, y]
             colors = (pixel[0], pixel[1], pixel[2])
             if (colors in COLOR_REF):
-                map[y][x] = SPEEDS[COLOR_REF[colors]]
+                map[y][x] = COLOR_REF[colors]
 
     return map
 
+def build_from(map):
+    width = len(map[0])
+    height = len(map)
+    img = Image.new('RGB', (width, height))
+    pixels = img.load()
+
+    for x in range(width):
+        for y in range(height):
+            color = COLORS[map[y][x]]
+            pixels[x, y] = color
+
+    img.save(output_path)
+
+def compare():
+    source = Image.open(img_path)
+    generated = Image.open(output_path)
+
+    source_px = source.load()
+    gen_px = generated.load()
+
+    width, height = source.size
+    for x in range(width):
+        for y in range(height):
+            s = source_px[x, y]
+            s = (s[0], s[1], s[2])
+            g = gen_px[x, y]
+            g = (g[0], g[1], g[2])
+
+            if (s != g):
+                print(f"{x} {y} {s} {g}")
+                return False
+            
+    return True
 
 if __name__ == "__main__":
     # process elevation file
@@ -91,4 +122,5 @@ if __name__ == "__main__":
     path_points = process_path()
     # print(path_points)
     map = process_img()
-    print(map)
+    # print(map)
+    build = build_from(map)
