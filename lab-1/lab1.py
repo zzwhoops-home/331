@@ -1,5 +1,6 @@
 import sys
 from PIL import Image
+from grid import Tile
 
 # DISTANCE CONSTANTS (in meters)
 PX_WIDTH = 10.29
@@ -71,14 +72,21 @@ def process_img():
     pixels = img.load()
     width, height = img.size
     
-    map = [[0 for i in range(width)] for i in range(height)]
+    map = [[None for i in range(width)] for i in range(height)]
 
     for x in range(width):
         for y in range(height):
             pixel = pixels[x, y]
             colors = (pixel[0], pixel[1], pixel[2])
             if (colors in COLOR_REF):
-                map[y][x] = COLOR_REF[colors]
+                # get type value
+                type = COLOR_REF[colors]
+
+                # create tile object
+                tile = Tile(x, y, type)
+
+                # assign to array
+                map[y][x] = tile
 
     return map
 
@@ -94,6 +102,24 @@ def build_from(map):
             pixels[x, y] = color
 
     img.save(output_path)
+
+def get_neighbors(map, point):
+    x, y = point
+    width = len(map[0])
+    height = len(map)
+
+    tile = map[y][x]
+
+    # get N neighbor
+    if (y - 1 > 0):
+        neighbor = map[y - 1][x]
+        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+            tile.neighbors.append(map[y - 1][x])
+    
+    if (y - 1 > 0):
+        neighbor = map[y - 1][x]
+        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+            tile.neighbors.append(map[y - 1][x])
 
 def compare():
     source = Image.open(img_path)
@@ -123,4 +149,6 @@ if __name__ == "__main__":
     # print(path_points)
     map = process_img()
     # print(map)
-    build = build_from(map)
+    # build = build_from(map)
+
+    get_neighbors(map, path_points[0])
