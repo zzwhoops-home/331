@@ -3,6 +3,6 @@ class Tile:
         self.x = x
         self.y = y
         self.type = type
-        visited = False
-        cost = float('inf')
-        neighbors = []
+        self.visited = False
+        self.cost = float('inf')
+        self.neighbors = []
