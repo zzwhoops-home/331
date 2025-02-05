@@ -2,10 +2,6 @@ import sys
 from PIL import Image
 from grid import Tile
 
-# DISTANCE CONSTANTS (in meters)
-PX_WIDTH = 10.29
-PX_HEIGHT = 7.55
-
 # TERRAIN SPEEDS
 SPEEDS = {
     "OPEN": 5,
@@ -157,6 +153,14 @@ def get_neighbors(map, point):
         neighbor = map[y + 1][x + 1]
         if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
             tile.neighbors.append(neighbor)
+
+def get_distance(map, pt_a, pt_b):
+    
+    pass
+
+# perform A* search
+def search():
+    pass
 
 def compare():
     source = Image.open(img_path)
