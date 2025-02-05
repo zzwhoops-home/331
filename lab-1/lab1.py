@@ -110,16 +110,53 @@ def get_neighbors(map, point):
 
     tile = map[y][x]
 
-    # get N neighbor
-    if (y - 1 > 0):
+    # Get N neighbor
+    if (y - 1 >= 0):
         neighbor = map[y - 1][x]
         if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
-            tile.neighbors.append(map[y - 1][x])
-    
-    if (y - 1 > 0):
-        neighbor = map[y - 1][x]
+            tile.neighbors.append(neighbor)
+
+    # Get S neighbor
+    if (y + 1 < height):
+        neighbor = map[y + 1][x]
         if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
-            tile.neighbors.append(map[y - 1][x])
+            tile.neighbors.append(neighbor)
+
+    # Get W neighbor
+    if (x - 1 >= 0):
+        neighbor = map[y][x - 1]
+        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+            tile.neighbors.append(neighbor)
+
+    # Get E neighbor
+    if (x + 1 < width):
+        neighbor = map[y][x + 1]
+        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+            tile.neighbors.append(neighbor)
+
+    # Get NW neighbor
+    if (y - 1 >= 0 and x - 1 >= 0):
+        neighbor = map[y - 1][x - 1]
+        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+            tile.neighbors.append(neighbor)
+
+    # Get NE neighbor
+    if (y - 1 >= 0 and x + 1 < width):
+        neighbor = map[y - 1][x + 1]
+        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+            tile.neighbors.append(neighbor)
+
+    # Get SW neighbor
+    if (y + 1 < height and x - 1 >= 0):
+        neighbor = map[y + 1][x - 1]
+        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+            tile.neighbors.append(neighbor)
+
+    # Get SE neighbor
+    if (y + 1 < height and x + 1 < width):
+        neighbor = map[y + 1][x + 1]
+        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+            tile.neighbors.append(neighbor)
 
 def compare():
     source = Image.open(img_path)
@@ -151,4 +188,7 @@ if __name__ == "__main__":
     # print(map)
     # build = build_from(map)
 
-    get_neighbors(map, path_points[0])
+    start_pt = path_points[0]
+    for path_pt in path_points:
+        get_neighbors(map, path_pt)
+    arr = map[start_pt[1]][start_pt[0]].neighbors
