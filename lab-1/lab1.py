@@ -1,6 +1,11 @@
 import sys
 from PIL import Image
 from grid import Tile
+import math
+
+# DISTANCE CONSTANTS (in meters)
+PX_WIDTH = 10.29
+PX_HEIGHT = 7.55
 
 # TERRAIN SPEEDS
 SPEEDS = {
@@ -154,9 +159,33 @@ def get_neighbors(map, point):
         if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
             tile.neighbors.append(neighbor)
 
-def get_distance(map, pt_a, pt_b):
-    
-    pass
+# we pretend that the coordinate 0 meters, 0 meters at (0, 0)
+# is located in the center of the 0, 0 pixel, not the top-left
+def get_coords(self):
+    real_x = PX_WIDTH * self.x
+    real_y = PX_HEIGHT * self.y
+    return [real_x, real_y]
+
+def get_distance(map, elev, pt_a, pt_b):
+    pt_a_x = pt_a[0]
+    pt_a_y = pt_a[1]
+
+    pt_b_x = pt_b[0]
+    pt_b_y = pt_b[1]
+
+    elev_a = float(elev[pt_a_y][pt_a_x])
+    elev_b = float(elev[pt_b_y][pt_b_x])
+
+    x_a = pt_a_x * PX_WIDTH
+    y_a = pt_a_y * PX_HEIGHT
+    x_b = pt_b_x * PX_WIDTH
+    y_b = pt_b_y * PX_HEIGHT
+
+    vec_a = [x_a, y_a, elev_a]
+    vec_b = [x_b, y_b, elev_b]
+
+    distance = math.dist(vec_a, vec_b)
+    return distance
 
 # perform A* search
 def search():
@@ -195,4 +224,11 @@ if __name__ == "__main__":
     start_pt = path_points[0]
     for path_pt in path_points:
         get_neighbors(map, path_pt)
-    arr = map[start_pt[1]][start_pt[0]].neighbors
+    
+    tiles = map[start_pt[1]][start_pt[0]].neighbors
+    for tile in tiles:
+        next_pt = [tile.x, tile.y]
+        g = get_distance(map, elev_map, start_pt, next_pt)
+        h = get_distance(map, elev_map, next_pt, path_points[1])
+        print(f"{tile.x} {tile.y}: g(x): {g}, h(x) = {h}, f(x) = {g + h}")
+        print()
