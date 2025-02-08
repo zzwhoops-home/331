@@ -2,6 +2,7 @@ import sys
 from PIL import Image
 from grid import Tile
 import math
+from queue import PriorityQueue 
 
 # DISTANCE CONSTANTS (in meters)
 PX_WIDTH = 10.29
@@ -17,7 +18,7 @@ SPEEDS = {
     "IMPASSIBLE": 0.01,
     "SWAMP": 0.25,
     "PAVED_ROAD": 6,
-    "FOOTPATH": 5,
+    "FOOTPATH": 6,
     "OUT_OF_BOUNDS": 0
 }
 # COLOR CONSTANTS
@@ -187,8 +188,29 @@ def get_distance(map, elev, pt_a, pt_b):
     distance = math.dist(vec_a, vec_b)
     return distance
 
+def get_cost(map, point_to_travel, dist_f, dist_g):
+    x = point_to_travel[0]
+    y = point_to_travel[1]
+    
+    multiplier = SPEEDS[map[y][x].type]
+    print(map[y][x].type)
+
+    return (dist_f + dist_g) * multiplier
+
+
 # perform A* search
-def search():
+def search(map, point, next_point):
+    x = point[0]
+    y = point[1]
+
+    # get start Tile
+    start_tile = map[y][x]
+
+    # populate Tile neighbors
+    get_neighbors(map, point)
+    adjacent = start_tile.neighbors
+
+    
     pass
 
 def compare():
@@ -223,12 +245,15 @@ if __name__ == "__main__":
 
     start_pt = path_points[0]
     for path_pt in path_points:
+        # search(map, path_pt)
         get_neighbors(map, path_pt)
+        break
     
     tiles = map[start_pt[1]][start_pt[0]].neighbors
     for tile in tiles:
         next_pt = [tile.x, tile.y]
-        g = get_distance(map, elev_map, start_pt, next_pt)
-        h = get_distance(map, elev_map, next_pt, path_points[1])
-        print(f"{tile.x} {tile.y}: g(x): {g}, h(x) = {h}, f(x) = {g + h}")
+        g_dist = get_distance(map, elev_map, start_pt, next_pt)
+        h_dist = get_distance(map, elev_map, next_pt, path_points[1])
+        cost = get_cost(map, next_pt, g_dist, h_dist)
+        print(f"{tile.x} {tile.y}: g dist: {g_dist}, h dist = {h_dist}, f(x) (cost) = {cost}")
         print()
