@@ -223,6 +223,9 @@ def get_path(current):
         cur = cur.parent
     return path[::-1]
 
+# okay the issue is that g is not being tracked as a sum,
+# it is only being tracked as the cost of adjacent tile
+
 # perform A* search
 def search(map, elev, point, next_point):
     open_pq = PriorityQueue()
@@ -272,9 +275,14 @@ def search(map, elev, point, next_point):
             # get cost
             get_cost(map, elev, cur_point, adj_point, next_point)
 
+            # ignore if already in open set
             if (adj in open_set):
                 continue
 
+            # set current parent for tracing backward
+            adj.parent = current
+
+            # add valid adjacent with its cost into PQ and open set
             open_pq.put((adj.cost, adj))
             open_set.add(adj)
 
