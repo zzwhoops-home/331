@@ -4,5 +4,6 @@ class Tile:
         self.y = y
         self.type = type
         self.visited = False
+        self.parent = None
         self.cost = float('inf')
         self.neighbors = []

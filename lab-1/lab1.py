@@ -196,14 +196,16 @@ def get_cost(map, elev, pt_a, pt_b, pt_dest):
     # get 3D distance to next tile, then heuristic 3D distance to destination
     next_distance = math.dist(vec_a, vec_b)
     target_distance = math.dist(vec_b, vec_dest)
-    print(target_distance)
     travel_speed = SPEEDS[map[dest_y][dest_x].type]
 
     cost = (next_distance / travel_speed) + target_distance
     return cost
 
 # perform A* search
-def search(map, point, next_point):
+def search(map, elev, point, next_point):
+    open_pq = PriorityQueue()
+    closed_pq = PriorityQueue()
+
     x = point[0]
     y = point[1]
 
@@ -212,6 +214,8 @@ def search(map, point, next_point):
 
     # populate Tile neighbors
     get_neighbors(map, point)
+    # template
+    # cost = get_cost(map, elev, point, point, next_point)
     adjacent = start_tile.neighbors
 
     pass
@@ -245,17 +249,15 @@ if __name__ == "__main__":
     map = process_img()
     # print(map)
 
-    start_pt = path_points[0]
-    for path_pt in path_points:
-        # search(map, path_pt)
-        get_neighbors(map, path_pt)
+    for i in range(len(path_points) - 1):
+        search(map, elev_map, path_points[i], path_points[i + 1])
         break
     
-    tiles = map[start_pt[1]][start_pt[0]].neighbors
-    for tile in tiles:
-        next_pt = [tile.x, tile.y]
-        map[tile.y][tile.x].type = "OPTIMAL_PATH"
-        cost = get_cost(map, elev_map, start_pt, next_pt, path_points[1])
-        print(f"{tile.x} {tile.y}: f(x) (cost) = {cost}")
-        print()
+    # tiles = map[start_pt[1]][start_pt[0]].neighbors
+    # for tile in tiles:
+    #     next_pt = [tile.x, tile.y]
+    #     # map[tile.y][tile.x].type = "OPTIMAL_PATH"
+    #     cost = get_cost(map, elev_map, start_pt, next_pt, path_points[1])
+    #     print(f"{tile.x} {tile.y}: f(x) (cost) = {cost}")
+    #     print()
     build = build_from(map)
