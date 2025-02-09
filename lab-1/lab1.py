@@ -10,15 +10,15 @@ PX_HEIGHT = 7.55
 
 # TERRAIN SPEEDS
 SPEEDS = {
-    "OPEN": 5,
-    "MEADOW": 0.5,
-    "EASY_FOREST": 4,
-    "JOG_FOREST": 3,
-    "WALK_FOREST": 2,
-    "IMPASSIBLE": 0.01,
-    "SWAMP": 0.25,
-    "PAVED_ROAD": 6,
-    "FOOTPATH": 6,
+    "OPEN": 1.2,
+    "MEADOW": 0.3,
+    "EASY_FOREST": 1.1,
+    "JOG_FOREST": 0.8,
+    "WALK_FOREST": 0.4,
+    "IMPASSIBLE": 0.001,
+    "SWAMP": 0.1,
+    "PAVED_ROAD": 1.3,
+    "FOOTPATH": 1.3,
     "OUT_OF_BOUNDS": 0
 }
 # COLOR CONSTANTS
@@ -100,7 +100,7 @@ def build_from(map):
 
     for x in range(width):
         for y in range(height):
-            color = COLORS[map[y][x]]
+            color = COLORS[map[y][x].type]
             pixels[x, y] = color
 
     img.save(output_path)
@@ -167,36 +167,40 @@ def get_coords(self):
     real_y = PX_HEIGHT * self.y
     return [real_x, real_y]
 
-def get_distance(map, elev, pt_a, pt_b):
-    pt_a_x = pt_a[0]
-    pt_a_y = pt_a[1]
+def get_cost(map, elev, pt_a, pt_b, pt_dest):
+    # get individual components
+    a_x = pt_a[0]
+    a_y = pt_a[1]
+    b_x = pt_b[0]
+    b_y = pt_b[1]
+    dest_x = pt_dest[0]
+    dest_y = pt_dest[1]    
 
-    pt_b_x = pt_b[0]
-    pt_b_y = pt_b[1]
+    # get elevations
+    elev_a = float(elev[a_y][a_x])
+    elev_b = float(elev[b_y][b_x])
+    elev_dest = float(elev[dest_y][dest_x])
 
-    elev_a = float(elev[pt_a_y][pt_a_x])
-    elev_b = float(elev[pt_b_y][pt_b_x])
+    # get IRL coordinates based on tile-pixel ratios
+    world_a_x = a_x * PX_WIDTH
+    world_a_y = a_y * PX_HEIGHT
+    world_b_x = b_x * PX_WIDTH
+    world_b_y = b_y * PX_HEIGHT
+    world_dest_x = dest_x * PX_WIDTH 
+    world_dest_y = dest_y * PX_HEIGHT
 
-    x_a = pt_a_x * PX_WIDTH
-    y_a = pt_a_y * PX_HEIGHT
-    x_b = pt_b_x * PX_WIDTH
-    y_b = pt_b_y * PX_HEIGHT
+    vec_a = [world_a_x, world_a_y, elev_a]
+    vec_b = [world_b_x, world_b_y, elev_b]
+    vec_dest = [world_dest_x, world_dest_y, elev_dest]
 
-    vec_a = [x_a, y_a, elev_a]
-    vec_b = [x_b, y_b, elev_b]
+    # get 3D distance to next tile, then heuristic 3D distance to destination
+    next_distance = math.dist(vec_a, vec_b)
+    target_distance = math.dist(vec_b, vec_dest)
+    print(target_distance)
+    travel_speed = SPEEDS[map[dest_y][dest_x].type]
 
-    distance = math.dist(vec_a, vec_b)
-    return distance
-
-def get_cost(map, point_to_travel, dist_f, dist_g):
-    x = point_to_travel[0]
-    y = point_to_travel[1]
-    
-    multiplier = SPEEDS[map[y][x].type]
-    print(map[y][x].type)
-
-    return (dist_f + dist_g) * multiplier
-
+    cost = (next_distance / travel_speed) + target_distance
+    return cost
 
 # perform A* search
 def search(map, point, next_point):
@@ -210,7 +214,6 @@ def search(map, point, next_point):
     get_neighbors(map, point)
     adjacent = start_tile.neighbors
 
-    
     pass
 
 def compare():
@@ -241,7 +244,6 @@ if __name__ == "__main__":
     # print(path_points)
     map = process_img()
     # print(map)
-    # build = build_from(map)
 
     start_pt = path_points[0]
     for path_pt in path_points:
@@ -252,8 +254,8 @@ if __name__ == "__main__":
     tiles = map[start_pt[1]][start_pt[0]].neighbors
     for tile in tiles:
         next_pt = [tile.x, tile.y]
-        g_dist = get_distance(map, elev_map, start_pt, next_pt)
-        h_dist = get_distance(map, elev_map, next_pt, path_points[1])
-        cost = get_cost(map, next_pt, g_dist, h_dist)
-        print(f"{tile.x} {tile.y}: g dist: {g_dist}, h dist = {h_dist}, f(x) (cost) = {cost}")
+        map[tile.y][tile.x].type = "OPTIMAL_PATH"
+        cost = get_cost(map, elev_map, start_pt, next_pt, path_points[1])
+        print(f"{tile.x} {tile.y}: f(x) (cost) = {cost}")
         print()
+    build = build_from(map)
