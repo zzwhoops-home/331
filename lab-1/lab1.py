@@ -114,8 +114,8 @@ def reset(map):
             tile = map[y][x]
             tile.parent = None
             tile.visited = False
-            tile.g = float('inf')
-            tile.h = float('inf')
+            tile.g = 0
+            tile.h = 0
             tile.neighbors = []
 
 def get_neighbors(map, point):
@@ -181,6 +181,9 @@ def get_coords(self):
     return [real_x, real_y]
 
 def get_cost_g(map, elev, pt_a, pt_b):
+    """
+    This function will not update g, that happens in search.
+    """
     a_x, a_y = pt_a
     b_x, b_y = pt_b  
 
@@ -204,11 +207,14 @@ def get_cost_g(map, elev, pt_a, pt_b):
     return g
 
 def get_cost_h(map, elev, pt, pt_dest):
+    """
+    This function will update the heuristic function value at location x, y
+    """
     x, y = pt
     dest_x, dest_y = pt_dest
 
     # Get elevations
-    elev = float(elev[y][x])
+    elev_pt = float(elev[y][x])
     elev_dest = float(elev[dest_y][dest_x])
 
     # Get world coordinates
@@ -217,11 +223,12 @@ def get_cost_h(map, elev, pt, pt_dest):
     world_dest_x = dest_x * PX_WIDTH
     world_dest_y = dest_y * PX_HEIGHT
 
-    vec = [world_x, world_y, elev]
+    vec = [world_x, world_y, elev_pt]
     vec_dest = [world_dest_x, world_dest_y, elev_dest]
 
     # Compute heuristic 3D distance
     h = math.dist(vec, vec_dest)
+    map[y][x].h = h
 
     return h
 
@@ -241,20 +248,20 @@ def search(map, elev, point, next_point):
     # reset map first
     reset(map)
 
+    # create priority queue
     open_pq = PriorityQueue()
-    open_set = set()
+    open_set = {}
 
-    start_x = point[0]
-    start_y = point[1]
-    end_x = next_point[0]
-    end_y = next_point[1]
+    # get points
+    start_x, start_y = point
+    end_x, end_y = next_point
 
     # get start Tile and cost
     start_tile = map[start_y][start_x]
-    g_cost = get_cost(map, elev, point, point, next_point)
+    get_cost_h(map, elev, point, next_point)
     # add to priority queue and set
     open_pq.put((start_tile.cost(), start_tile))
-    open_set.add(start_tile)
+    open_set[start_tile] = start_tile.cost()
 
     # get end tile
     end_tile = map[end_y][end_x]
@@ -274,7 +281,8 @@ def search(map, elev, point, next_point):
         cur_point = [current.x, current.y]
 
         # populate Tile neighbors
-        get_neighbors(map, cur_point)
+        if (len(current.neighbors) == 0):
+            get_neighbors(map, cur_point)
         adjacent = current.neighbors
 
         # get costs
@@ -286,18 +294,23 @@ def search(map, elev, point, next_point):
             # get adj point
             adj_point = [adj.x, adj.y]
             # get cost
-            get_cost(map, elev, cur_point, adj_point, next_point)
+            g_cost = get_cost_g(map, elev, cur_point, adj_point)
 
             # ignore if already in open set
-            if (adj in open_set):
+            if (adj in open_set and adj.g <= current.g + g_cost):
                 continue
 
-            # set current parent for tracing backward
+            # set current parent for tracing backward, this is the optimal path
             adj.parent = current
+            adj.g = current.g + g_cost
+            adj.h = get_cost_h(map, elev, adj_point, next_point)
 
             # add valid adjacent with its cost into PQ and open set
             open_pq.put((adj.cost(), adj))
-            open_set.add(adj)
+            open_set[adj] = adj.cost()
+    
+    # no path was found
+    return None
 
 def compare():
     source = Image.open(img_path)
@@ -330,7 +343,6 @@ if __name__ == "__main__":
 
     for i in range(len(path_points) - 1):
         search(map, elev_map, path_points[i], path_points[i + 1])
-        break
     
     # tiles = map[start_pt[1]][start_pt[0]].neighbors
     # for tile in tiles:

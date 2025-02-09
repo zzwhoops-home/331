@@ -6,7 +6,7 @@ class Tile:
         self.visited = False
         self.parent = None
         self.g = 0
-        self.h = float('inf')
+        self.h = 0
         self.neighbors = []
 
     def cost(self):
