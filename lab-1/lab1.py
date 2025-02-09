@@ -105,6 +105,18 @@ def build_from(map):
 
     img.save(output_path)
 
+def reset(map):
+    width = len(map[0])
+    height = len(map)
+
+    for x in range(width):
+        for y in range(height):
+            tile = map[y][x]
+            tile.parent = None
+            tile.visited = False
+            tile.cost = float('inf')
+            tile.neighbors = []
+
 def get_neighbors(map, point):
     x, y = point
     width = len(map[0])
@@ -199,26 +211,72 @@ def get_cost(map, elev, pt_a, pt_b, pt_dest):
     travel_speed = SPEEDS[map[dest_y][dest_x].type]
 
     cost = (next_distance / travel_speed) + target_distance
+    # store cost in node
+    map[b_y][b_x].cost = cost
     return cost
+
+def get_path(current):
+    path = []
+    cur = current
+    while (cur is not None):
+        path.append(cur)
+        cur = cur.parent
+    return path[::-1]
 
 # perform A* search
 def search(map, elev, point, next_point):
     open_pq = PriorityQueue()
-    closed_pq = PriorityQueue()
+    open_set = set()
 
-    x = point[0]
-    y = point[1]
+    start_x = point[0]
+    start_y = point[1]
+    end_x = next_point[0]
+    end_y = next_point[1]
 
-    # get start Tile
-    start_tile = map[y][x]
+    # get start Tile and cost
+    start_tile = map[start_y][start_x]
+    get_cost(map, elev, point, point, next_point)
+    # add to priority queue and set
+    open_pq.put((start_tile.cost, start_tile))
+    open_set.add(start_tile)
 
-    # populate Tile neighbors
-    get_neighbors(map, point)
-    # template
-    # cost = get_cost(map, elev, point, point, next_point)
-    adjacent = start_tile.neighbors
+    # get end tile
+    end_tile = map[end_y][end_x]
 
-    pass
+    while (open_pq.qsize() > 0):
+        # get next node with priority queue
+        _, current = open_pq.get()
+
+        # add current node to visited set
+        current.visited = True
+
+        # check for end condition
+        if (current == end_tile):
+            return get_path(current)
+
+        # get cur point
+        cur_point = [current.x, current.y]
+
+        # populate Tile neighbors
+        get_neighbors(map, cur_point)
+        adjacent = current.neighbors
+
+        # get costs
+        for adj in adjacent:
+            # skip over children already visited
+            if (adj.visited):
+                continue
+
+            # get adj point
+            adj_point = [adj.x, adj.y]
+            # get cost
+            get_cost(map, elev, cur_point, adj_point, next_point)
+
+            if (adj in open_set):
+                continue
+
+            open_pq.put((adj.cost, adj))
+            open_set.add(adj)
 
 def compare():
     source = Image.open(img_path)
