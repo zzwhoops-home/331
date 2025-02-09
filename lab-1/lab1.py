@@ -114,7 +114,8 @@ def reset(map):
             tile = map[y][x]
             tile.parent = None
             tile.visited = False
-            tile.cost = float('inf')
+            tile.g = float('inf')
+            tile.h = float('inf')
             tile.neighbors = []
 
 def get_neighbors(map, point):
@@ -205,14 +206,21 @@ def get_cost(map, elev, pt_a, pt_b, pt_dest):
     vec_b = [world_b_x, world_b_y, elev_b]
     vec_dest = [world_dest_x, world_dest_y, elev_dest]
 
-    # get 3D distance to next tile, then heuristic 3D distance to destination
-    next_distance = math.dist(vec_a, vec_b)
-    target_distance = math.dist(vec_b, vec_dest)
+    # get 3D distance to next tile (divided by terrain speed)
+    # then heuristic 3D distance to destination
     travel_speed = SPEEDS[map[dest_y][dest_x].type]
+    g = math.dist(vec_a, vec_b) / travel_speed
+    h = math.dist(vec_b, vec_dest)
 
-    cost = (next_distance / travel_speed) + target_distance
     # store cost in node
-    map[b_y][b_x].cost = cost
+    tile = map[b_y][b_x]
+    if (tile.g == float('inf')):
+        tile.g = g
+    else:
+        tile.g += g
+    tile.h = h
+
+    cost = g + h
     return cost
 
 def get_path(current):
@@ -228,6 +236,9 @@ def get_path(current):
 
 # perform A* search
 def search(map, elev, point, next_point):
+    # reset map first
+    reset(map)
+
     open_pq = PriorityQueue()
     open_set = set()
 
@@ -240,7 +251,7 @@ def search(map, elev, point, next_point):
     start_tile = map[start_y][start_x]
     get_cost(map, elev, point, point, next_point)
     # add to priority queue and set
-    open_pq.put((start_tile.cost, start_tile))
+    open_pq.put((start_tile.cost(), start_tile))
     open_set.add(start_tile)
 
     # get end tile
@@ -283,7 +294,7 @@ def search(map, elev, point, next_point):
             adj.parent = current
 
             # add valid adjacent with its cost into PQ and open set
-            open_pq.put((adj.cost, adj))
+            open_pq.put((adj.cost(), adj))
             open_set.add(adj)
 
 def compare():

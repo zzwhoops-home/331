@@ -5,8 +5,12 @@ class Tile:
         self.type = type
         self.visited = False
         self.parent = None
-        self.cost = float('inf')
+        self.g = float('inf')
+        self.h = float('inf')
         self.neighbors = []
+
+    def cost(self):
+        return self.g + self.h
 
     def __eq__(self, other):
         inst_match = isinstance(other, Tile)
