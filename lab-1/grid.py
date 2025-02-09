@@ -5,7 +5,7 @@ class Tile:
         self.type = type
         self.visited = False
         self.parent = None
-        self.g = float('inf')
+        self.g = 0
         self.h = float('inf')
         self.neighbors = []
 

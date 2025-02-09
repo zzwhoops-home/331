@@ -180,48 +180,50 @@ def get_coords(self):
     real_y = PX_HEIGHT * self.y
     return [real_x, real_y]
 
-def get_cost(map, elev, pt_a, pt_b, pt_dest):
-    # get individual components
-    a_x = pt_a[0]
-    a_y = pt_a[1]
-    b_x = pt_b[0]
-    b_y = pt_b[1]
-    dest_x = pt_dest[0]
-    dest_y = pt_dest[1]    
+def get_cost_g(map, elev, pt_a, pt_b):
+    a_x, a_y = pt_a
+    b_x, b_y = pt_b  
 
-    # get elevations
+    # Get elevations
     elev_a = float(elev[a_y][a_x])
     elev_b = float(elev[b_y][b_x])
-    elev_dest = float(elev[dest_y][dest_x])
 
-    # get IRL coordinates based on tile-pixel ratios
+    # Get world coordinates
     world_a_x = a_x * PX_WIDTH
     world_a_y = a_y * PX_HEIGHT
     world_b_x = b_x * PX_WIDTH
     world_b_y = b_y * PX_HEIGHT
-    world_dest_x = dest_x * PX_WIDTH 
-    world_dest_y = dest_y * PX_HEIGHT
 
     vec_a = [world_a_x, world_a_y, elev_a]
     vec_b = [world_b_x, world_b_y, elev_b]
+
+    # Get 3D distance and divide by terrain speed
+    travel_speed = SPEEDS[map[b_y][b_x].type]
+    g = math.dist(vec_a, vec_b) / travel_speed
+
+    return g
+
+def get_cost_h(map, elev, pt, pt_dest):
+    x, y = pt
+    dest_x, dest_y = pt_dest
+
+    # Get elevations
+    elev = float(elev[y][x])
+    elev_dest = float(elev[dest_y][dest_x])
+
+    # Get world coordinates
+    world_x = x * PX_WIDTH
+    world_y = y * PX_HEIGHT
+    world_dest_x = dest_x * PX_WIDTH
+    world_dest_y = dest_y * PX_HEIGHT
+
+    vec = [world_x, world_y, elev]
     vec_dest = [world_dest_x, world_dest_y, elev_dest]
 
-    # get 3D distance to next tile (divided by terrain speed)
-    # then heuristic 3D distance to destination
-    travel_speed = SPEEDS[map[dest_y][dest_x].type]
-    g = math.dist(vec_a, vec_b) / travel_speed
-    h = math.dist(vec_b, vec_dest)
+    # Compute heuristic 3D distance
+    h = math.dist(vec, vec_dest)
 
-    # store cost in node
-    tile = map[b_y][b_x]
-    if (tile.g == float('inf')):
-        tile.g = g
-    else:
-        tile.g += g
-    tile.h = h
-
-    cost = g + h
-    return cost
+    return h
 
 def get_path(current):
     path = []
@@ -249,7 +251,7 @@ def search(map, elev, point, next_point):
 
     # get start Tile and cost
     start_tile = map[start_y][start_x]
-    get_cost(map, elev, point, point, next_point)
+    g_cost = get_cost(map, elev, point, point, next_point)
     # add to priority queue and set
     open_pq.put((start_tile.cost(), start_tile))
     open_set.add(start_tile)
