@@ -240,9 +240,6 @@ def get_path(current):
         cur = cur.parent
     return path[::-1]
 
-# okay the issue is that g is not being tracked as a sum,
-# it is only being tracked as the cost of adjacent tile
-
 # perform A* search
 def search(map, elev, point, next_point):
     # reset map first
@@ -341,14 +338,21 @@ if __name__ == "__main__":
     map = process_img()
     # print(map)
 
+    paths = []
+    distance = 0
     for i in range(len(path_points) - 1):
-        search(map, elev_map, path_points[i], path_points[i + 1])
-    
-    # tiles = map[start_pt[1]][start_pt[0]].neighbors
-    # for tile in tiles:
-    #     next_pt = [tile.x, tile.y]
-    #     # map[tile.y][tile.x].type = "OPTIMAL_PATH"
-    #     cost = get_cost(map, elev_map, start_pt, next_pt, path_points[1])
-    #     print(f"{tile.x} {tile.y}: f(x) (cost) = {cost}")
-    #     print()
+        # perform A* search
+        path = search(map, elev_map, path_points[i], path_points[i + 1])
+
+        # get cost of final tile reached
+        distance += path[-1].cost()
+        
+        # add path to set colors
+        paths.append(path)
+
+    for path in paths:
+        for tile in path:
+            map[tile.y][tile.x].type = "OPTIMAL_PATH"
+
     build = build_from(map)
+    print(distance)
