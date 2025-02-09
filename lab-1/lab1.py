@@ -330,6 +330,23 @@ def compare():
             
     return True
 
+def get_path_distance(path, elev):
+    distance = 0
+
+    for i in range(len(path) - 1):
+        cur = path[i]
+        next = path[i + 1]
+
+        cur_height = float(elev[cur.y][cur.x])
+        next_height = float(elev[next.y][next.x])
+
+        diff = [(next.x - cur.x) * PX_WIDTH, (next.y - cur.y) * PX_HEIGHT]
+        height_diff = next_height - cur_height
+
+        distance += math.sqrt(diff[0] ** 2 + diff[1] ** 2 + height_diff ** 2)
+
+    return distance
+
 if __name__ == "__main__":
     # process elevation file
     elev_map = process_elev()
@@ -345,7 +362,7 @@ if __name__ == "__main__":
         path = search(map, elev_map, path_points[i], path_points[i + 1])
 
         # get cost of final tile reached
-        distance += path[-1].cost()
+        distance += get_path_distance(path, elev_map)
         
         # add path to set colors
         paths.append(path)
