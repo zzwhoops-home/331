@@ -149,29 +149,29 @@ def get_neighbors(map, point):
         if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
             tile.neighbors.append(neighbor)
 
-    # Get NW neighbor
-    if (y - 1 >= 0 and x - 1 >= 0):
-        neighbor = map[y - 1][x - 1]
-        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
-            tile.neighbors.append(neighbor)
+    # # Get NW neighbor
+    # if (y - 1 >= 0 and x - 1 >= 0):
+    #     neighbor = map[y - 1][x - 1]
+    #     if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+    #         tile.neighbors.append(neighbor)
 
-    # Get NE neighbor
-    if (y - 1 >= 0 and x + 1 < width):
-        neighbor = map[y - 1][x + 1]
-        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
-            tile.neighbors.append(neighbor)
+    # # Get NE neighbor
+    # if (y - 1 >= 0 and x + 1 < width):
+    #     neighbor = map[y - 1][x + 1]
+    #     if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+    #         tile.neighbors.append(neighbor)
 
-    # Get SW neighbor
-    if (y + 1 < height and x - 1 >= 0):
-        neighbor = map[y + 1][x - 1]
-        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
-            tile.neighbors.append(neighbor)
+    # # Get SW neighbor
+    # if (y + 1 < height and x - 1 >= 0):
+    #     neighbor = map[y + 1][x - 1]
+    #     if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+    #         tile.neighbors.append(neighbor)
 
-    # Get SE neighbor
-    if (y + 1 < height and x + 1 < width):
-        neighbor = map[y + 1][x + 1]
-        if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
-            tile.neighbors.append(neighbor)
+    # # Get SE neighbor
+    # if (y + 1 < height and x + 1 < width):
+    #     neighbor = map[y + 1][x + 1]
+    #     if (neighbor.type != "OUT_OF_BOUNDS" and not neighbor.visited):
+    #         tile.neighbors.append(neighbor)
 
 # we pretend that the coordinate 0 meters, 0 meters at (0, 0)
 # is located in the center of the 0, 0 pixel, not the top-left
