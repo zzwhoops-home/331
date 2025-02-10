@@ -12,6 +12,9 @@ class Tile:
     def cost(self):
         return self.g + self.h
 
+    def __lt__(self, other):
+        return self.cost() < other.cost()
+
     def __eq__(self, other):
         inst_match = isinstance(other, Tile)
         coord_match = self.x == other.x and self.y == other.y
