@@ -1,5 +1,5 @@
 import sys
-# from helpers import Predicate
+from helpers import Predicate
 
 # get command line args
 args = sys.argv
@@ -42,3 +42,8 @@ def process_file():
 
 if __name__ == "__main__":
     process_file()
+
+    pred = Predicate("dog", "-", "Kim")
+    things = [pred]
+    for thing in things:
+        print(thing)
