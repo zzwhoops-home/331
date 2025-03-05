@@ -28,4 +28,5 @@ class Variable:
 
 class Function:
     def __init__(self, name: str):
+        # needs to include independent term since funcs depend on vars
         self.name = name

@@ -1,5 +1,5 @@
 import sys
-from helpers import Clause, Predicate, Constant
+from helpers import Clause, Predicate, Constant, Variable, Function
 import re
 
 # get command line args
@@ -8,9 +8,9 @@ KB_PATH = args[1]
 
 kb = set()
 terms = {
-    'vars': [],
-    'consts': [],
-    'funcs': []
+    'vars': set(),
+    'consts': set(),
+    'funcs': set()
 }
 
 clauses = []
@@ -33,21 +33,15 @@ def process_file():
             preds = []
 
         if (len(vars) > 1):
-            terms['vars'] = vars[1].split(" ")
-        else:
-            terms['vars'] = []
+            terms['vars'] = set(vars[1].split(" "))
 
         if (len(consts) > 1):
-            terms['consts'] = consts[1].split(" ")
-        else:
-            terms['consts'] = []
+            terms['consts'] = set(consts[1].split(" "))
             
         if (len(funcs) > 1):
-            terms['funcs'] = funcs[1].split(" ")
-        else:
-            terms['funcs'] = []
+            terms['funcs'] = set(funcs[1].split(" "))
 
-def process_terms(terms: list[str]):
+def process_terms(str_terms: list[str]):
     """Processes a list of string terms into their correct forms, either a:
         - constant
         - variable
@@ -57,12 +51,24 @@ def process_terms(terms: list[str]):
         terms (list[str]): a list of string terms
 
     Returns:
-        list[Constant | Variable | Function]
+        set[Constant | Variable | Function]: A set of processed terms into objects
     """
-    processed_terms = []
+    global terms
+
+    processed_terms = set()
+
+    for term in str_terms:
+        if (term in terms["consts"]):
+            const = Constant(name=term)
+            processed_terms.add(const)
+        elif (term in terms["vars"]):
+            var = Variable(name=term)
+            processed_terms.add(var)
+        elif (term in terms["funcs"]):
+            func = Function(name=term)
+            processed_terms.add(func)
 
     return processed_terms
-    
 
 def process_clause(clause: str):
     """Processes a clause, generating required Clauses, Predicates, and Terms
@@ -89,11 +95,11 @@ def process_clause(clause: str):
 
         # get result between parentheses (terms)
         result = re.search("\((.*)\)", p).group(1)
-        terms = result.split(",")
+        str_terms = result.split(",")
 
-        processed_terms = process_terms()
+        processed_terms = process_terms(str_terms=str_terms)
 
-        pred_obj = Predicate(name=pred, negated=negated, args=terms)
+        pred_obj = Predicate(name=pred, negated=negated, args=processed_terms)
         predicates.append(pred_obj)
 
     return predicates
