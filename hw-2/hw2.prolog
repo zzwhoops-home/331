@@ -70,15 +70,22 @@ married(sophie,edward).
 %You may add more clauses to help%
 %********************************%
 % spouse(X,Y) Symmetric version of married
-spouse(X,Y):- fail.
+spouse(X,Y) :- married(X,Y),female(X),male(Y).
 
 %daughterOf(X,Y) - X is the female child of Y
-daughterOf(X,Y):-fail.
+daughterOf(X,Y) :- female(X),childOf(X,Y).
 %sonOf(X,Y) - X is the male child of Y
-sonOf(X,Y):-fail.
+sonOf(X,Y) :- male(X),childOf(X,Y).
+
+%parentOf(X,Y) - X is a parent of Y
+parentOf(X,Y) :- childOf(Y,X).
+childOf(X,Y) :- parentOf(Y,X).
+% siblingOf(X,Y) - X is a sibling of Y
+% try and unify with '=', not identical with '\=='
+% siblingOf(X,Y):-==
 
 %brotherOf(X,Y) - X is the male sibling of Y
-brotherOf(X,Y):-fail.
+brotherOf(X,Y):-male(X).
 %sisterOf(X,Y) - X is the female sibling of Y
 sisterOf(X,Y):-fail.
 
