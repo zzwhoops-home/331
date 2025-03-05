@@ -21,3 +21,11 @@ class Constant:
 
     def __eq__(self, value):
         return self.name == value
+    
+class Variable:
+    def __init__(self, name: str):
+        self.name = name
+
+class Function:
+    def __init__(self, name: str):
+        self.name = name

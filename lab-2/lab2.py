@@ -47,11 +47,31 @@ def process_file():
         else:
             terms['funcs'] = []
 
+def process_terms(terms: list[str]):
+    """Processes a list of string terms into their correct forms, either a:
+        - constant
+        - variable
+        - function    
+
+    Args:
+        terms (list[str]): a list of string terms
+
+    Returns:
+        list[Constant | Variable | Function]
+    """
+    processed_terms = []
+
+    return processed_terms
+    
+
 def process_clause(clause: str):
     """Processes a clause, generating required Clauses, Predicates, and Terms
 
     Args:
         clause (str): the string clause representation
+    
+    Returns:
+        list[Predicate]: a list of processed predicates
     """
     # predicate array
     predicates = []
@@ -61,22 +81,26 @@ def process_clause(clause: str):
 
     # for each predicate, find constants
     for p in str_preds:
+        # get negation
+        negated = True if clause[0] == '!' else False
+
+        # get predicate name
+        pred = clause[:clause.index("(")]
+
         # get result between parentheses (terms)
         result = re.search("\((.*)\)", p).group(1)
         terms = result.split(",")
 
-        pred_obj = Predicate()
+        processed_terms = process_terms()
+
+        pred_obj = Predicate(name=pred, negated=negated, args=terms)
         predicates.append(pred_obj)
 
+    return predicates
 
 if __name__ == "__main__":
     process_file()
 
-    print(kb)
+    process_clause(clauses[0])
 
-    pred = Predicate("dog", "-", "Kim")
-    clause = Clause(clauses[0])
-    print(clause.__hash__())
-    things = [pred]
-    for thing in things:
-        print(thing)
+    print(kb)
