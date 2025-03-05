@@ -6,17 +6,15 @@ import re
 args = sys.argv
 KB_PATH = args[1]
 
-kb = set()
+kb = []
 terms = {
     'vars': set(),
     'consts': set(),
     'funcs': set()
 }
 
-clauses = []
 
 def process_file():
-    global clauses
     global terms
 
     with open(KB_PATH, "r") as f:
@@ -40,6 +38,8 @@ def process_file():
             
         if (len(funcs) > 1):
             terms['funcs'] = set(funcs[1].split(" "))
+
+        return clauses
 
 def process_terms(str_terms: list[str]):
     """Processes a list of string terms into their correct forms, either a:
@@ -104,21 +104,51 @@ def process_clause(clause: str):
 
     return predicates
 
-def resolution(clauses: list):
-    return
+def resolution():
+    global kb
+
+    length = len(kb)
+
+    # if we're already done
+    if (length == 0 or length == 1):
+        return
+    
+    # check all pairs
+    for i in range(0, length - 1):
+        for j in range(i + 1, length):
+            # get current pair c_i and c_j
+            clause_i = kb[i]
+            clause_j = kb[j]
+
+def resolve_clauses(clause_i: Clause, clause_j: Clause):
+    """Resolves two clauses and returns the result
+
+    Args:
+        clause_i (Clause): Clause i in the pair
+        clause_j (Clause): Clause j in the pair
+
+    Returns:
+        Clause: the resolved clauses
+    """
+    for predicate_i in clause_i.predicates:
+        if predicate_i in clause_j.predicates:
+            pass
+
+    return False
 
 if __name__ == "__main__":
-    process_file()
+    clauses = process_file()
 
     for clause in clauses:
         preds = process_clause(clause)
 
         clause_obj = Clause(preds, clause)
-        kb.add(clause_obj)
+        kb.append(clause_obj)
+
+    # resolve KB
+    resolution()
 
     # print(preds[0])
     # print(next(iter(preds[0].args)))
     # print(preds[1])
     # print(next(iter(preds[1].args)))
-
-    print(kb)

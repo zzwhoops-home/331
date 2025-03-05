@@ -25,6 +25,9 @@ class Clause:
 
     def __hash__(self):
         return hash(self.str_clause)
+    
+    def __str__(self):
+        return self.str_clause
 
 class Constant:
     def __init__(self, name: str):
