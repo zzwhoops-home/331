@@ -1,11 +1,24 @@
 import sys
-from helpers import Predicate
+from helpers import Clause, Predicate, Constant
+import re
 
 # get command line args
 args = sys.argv
 KB_PATH = args[1]
 
+kb = set()
+terms = {
+    'vars': [],
+    'consts': [],
+    'funcs': []
+}
+
+clauses = []
+
 def process_file():
+    global clauses
+    global terms
+
     with open(KB_PATH, "r") as f:
         lines = [line.strip() for line in f.readlines()]
         preds = lines[0].split(": ")
@@ -20,30 +33,50 @@ def process_file():
             preds = []
 
         if (len(vars) > 1):
-            vars = vars[1].split(" ")
+            terms['vars'] = vars[1].split(" ")
         else:
-            vars = []
+            terms['vars'] = []
 
         if (len(consts) > 1):
-            consts = consts[1].split(" ")
+            terms['consts'] = consts[1].split(" ")
         else:
-            consts = []
+            terms['consts'] = []
             
         if (len(funcs) > 1):
-            funcs = funcs[1].split(" ")
+            terms['funcs'] = funcs[1].split(" ")
         else:
-            funcs = []
+            terms['funcs'] = []
 
-        print(preds)
-        print(vars)
-        print(consts)
-        print(funcs)
-        print(clauses)
+def process_clause(clause: str):
+    """Processes a clause, generating required Clauses, Predicates, and Terms
+
+    Args:
+        clause (str): the string clause representation
+    """
+    # predicate array
+    predicates = []
+
+    # split multiple clauses into array
+    str_preds = clause.split(" ")
+
+    # for each predicate, find constants
+    for p in str_preds:
+        # get result between parentheses (terms)
+        result = re.search("\((.*)\)", p).group(1)
+        terms = result.split(",")
+
+        pred_obj = Predicate()
+        predicates.append(pred_obj)
+
 
 if __name__ == "__main__":
     process_file()
 
+    print(kb)
+
     pred = Predicate("dog", "-", "Kim")
+    clause = Clause(clauses[0])
+    print(clause.__hash__())
     things = [pred]
     for thing in things:
         print(thing)
