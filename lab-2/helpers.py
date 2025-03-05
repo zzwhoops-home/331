@@ -21,6 +21,9 @@ class Constant:
 
     def __eq__(self, value):
         return self.name == value
+
+    def __hash__(self):
+        return hash("c" + self.name)
     
 class Variable:
     def __init__(self, name: str):
