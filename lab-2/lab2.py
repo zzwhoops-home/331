@@ -91,10 +91,10 @@ def process_clause(clause: str):
         negated = True if clause[0] == '!' else False
 
         # get predicate name
-        pred = clause[:clause.index("(")]
+        pred = p[:p.index("(")]
 
         # get result between parentheses (terms)
-        result = re.search("\((.*)\)", p).group(1)
+        result = re.search(r"\((.*)\)", p).group(1)
         str_terms = result.split(",")
 
         processed_terms = process_terms(str_terms=str_terms)
@@ -104,9 +104,21 @@ def process_clause(clause: str):
 
     return predicates
 
+def resolution(clauses: list):
+    return
+
 if __name__ == "__main__":
     process_file()
 
-    process_clause(clauses[0])
+    for clause in clauses:
+        preds = process_clause(clause)
+
+        clause_obj = Clause(preds, clause)
+        kb.add(clause_obj)
+
+    # print(preds[0])
+    # print(next(iter(preds[0].args)))
+    # print(preds[1])
+    # print(next(iter(preds[1].args)))
 
     print(kb)
