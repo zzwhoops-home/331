@@ -88,10 +88,13 @@ def process_clause(clause: str):
     # for each predicate, find constants
     for p in str_preds:
         # get negation
-        negated = True if clause[0] == '!' else False
+        negated = True if p[0] == '!' else False
 
         # get predicate name
-        pred = p[:p.index("(")]
+        if (negated):
+            pred = p[1:p.index("(")]
+        else:
+            pred = p[:p.index("(")]
 
         # get result between parentheses (terms)
         result = re.search(r"\((.*)\)", p).group(1)
@@ -119,6 +122,7 @@ def resolution():
             # get current pair c_i and c_j
             clause_i = kb[i]
             clause_j = kb[j]
+            resolve_clauses(clause_i, clause_j)
 
 def resolve_clauses(clause_i: Clause, clause_j: Clause):
     """Resolves two clauses and returns the result
@@ -132,9 +136,24 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
     """
     for predicate_i in clause_i.predicates:
         if predicate_i in clause_j.predicates:
+            args_i = predicate_i.args
+            args_j = predicate_i.args
+            if (arg_matches(args_i, args_j)):
+                print("yes")
             pass
 
     return False
+
+def arg_matches(args_i, args_j):
+    args_i = list(args_i)
+    args_j = list(args_j)
+    if (len(args_i) != len(args_j)):
+        return False
+    for i in range(len(args_i)):
+        if (args_i[i] != args_j[i]):
+            return False
+        
+    return True
 
 if __name__ == "__main__":
     clauses = process_file()
@@ -144,6 +163,8 @@ if __name__ == "__main__":
 
         clause_obj = Clause(preds, clause)
         kb.append(clause_obj)
+
+    # print([str(x) for x in kb])
 
     # resolve KB
     resolution()

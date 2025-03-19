@@ -7,6 +7,12 @@ class Predicate:
     def __str__(self):
         return self.name
     
+    def __repr__(self):
+        return self.name
+    
+    def __eq__(self, value):
+        return self.name == value.name
+    
     def matches(self, predicate):
         """Custom function comparing two predicates. Used to check if two predicates match
 
