@@ -25,9 +25,8 @@ class Predicate:
         return self.name == predicate.name
 
 class Clause:
-    def __init__(self, predicates: list[Predicate], str_clause: str):
+    def __init__(self, predicates: list[Predicate]):
         self.predicates = predicates
-        self.str_clause = str_clause
 
     def __hash__(self):
         return hash(self.str_clause)

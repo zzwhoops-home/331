@@ -13,7 +13,6 @@ terms = {
     'funcs': set()
 }
 
-
 def process_file():
     global terms
 
@@ -114,15 +113,25 @@ def resolution():
 
     # if we're already done
     if (length == 0 or length == 1):
-        return
+        return True
     
+    new = set()
+
     # check all pairs
     for i in range(0, length - 1):
         for j in range(i + 1, length):
             # get current pair c_i and c_j
             clause_i = kb[i]
             clause_j = kb[j]
-            resolve_clauses(clause_i, clause_j)
+            resolved = resolve_clauses(clause_i, clause_j)
+            # check for empty clause. if we find one, then DB is unsatisfiable
+            if (not resolved):
+                return False
+            
+            # otherwise, add to "new" clause
+            new.add(Clause(resolved))
+    
+    # check if there is new information. If new.predicates is a subset of clauses
 
 def resolve_clauses(clause_i: Clause, clause_j: Clause):
     """Resolves two clauses and returns the result
@@ -135,25 +144,33 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
         Clause: the resolved clauses
     """
     for predicate_i in clause_i.predicates:
-        if predicate_i in clause_j.predicates:
+        for predicate_j in clause_j.predicates:
+            if (predicate_i.name != predicate_j.name):
+                continue
             args_i = predicate_i.args
-            args_j = predicate_i.args
+            args_j = predicate_j.args
             if (arg_matches(args_i, args_j)):
-                print("yes")
-            pass
+                # check if the two clauses are opposites of each other
+                # if so, remove the instances
+                if (predicate_i.negated != predicate_j.negated):
+                    clause_i.predicates.remove(predicate_i)
+                    clause_j.predicates.remove(predicate_j)
 
-    return False
+    # return the two sets of predicates resolved
+    return clause_i.predicates + clause_j.predicates
 
 def arg_matches(args_i, args_j):
-    args_i = list(args_i)
-    args_j = list(args_j)
-    if (len(args_i) != len(args_j)):
-        return False
-    for i in range(len(args_i)):
-        if (args_i[i] != args_j[i]):
-            return False
-        
-    return True
+    """Takes two sets of arguments (constants, variables, or functions)
+    and checks if the arguments match by using a set comparison
+
+    Args:
+        args_i (_type_): list of arguments for clause i
+        args_j (_type_): list of arguments for clause j
+
+    Returns:
+        bool: True if the arguments match, False if they do not
+    """
+    return len(args_i - args_j) == 0
 
 if __name__ == "__main__":
     clauses = process_file()
@@ -161,13 +178,14 @@ if __name__ == "__main__":
     for clause in clauses:
         preds = process_clause(clause)
 
-        clause_obj = Clause(preds, clause)
+        clause_obj = Clause(preds)
         kb.append(clause_obj)
 
     # print([str(x) for x in kb])
 
-    # resolve KB
-    resolution()
+    # resolve KB, if we find empty clause, resolution() returns False
+    # and we can return "no", otherwise we say "yes"
+    print("yes" if resolution() else "no")
 
     # print(preds[0])
     # print(next(iter(preds[0].args)))
