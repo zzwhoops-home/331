@@ -115,23 +115,38 @@ def resolution():
     if (length == 0 or length == 1):
         return True
     
-    new = set()
+    new = []
 
-    # check all pairs
-    for i in range(0, length - 1):
-        for j in range(i + 1, length):
-            # get current pair c_i and c_j
-            clause_i = kb[i]
-            clause_j = kb[j]
-            resolved = resolve_clauses(clause_i, clause_j)
-            # check for empty clause. if we find one, then DB is unsatisfiable
-            if (not resolved):
-                return False
-            
-            # otherwise, add to "new" clause
-            new.add(Clause(resolved))
-    
-    # check if there is new information. If new.predicates is a subset of clauses
+    count = 0
+    while (True):
+        if (count == 2):
+            break
+        # get KB string representations for checking set subset
+        kb_set = set([str(clause) for clause in kb])
+
+        # check all pairs
+        for i in range(0, length - 1):
+            for j in range(i + 1, length):
+                # get current pair c_i and c_j
+                clause_i = kb[i]
+                clause_j = kb[j]
+                resolved = resolve_clauses(clause_i, clause_j)
+                # check for empty clause. if we find one, then DB is unsatisfiable
+                if (not resolved):
+                    return False
+                
+                # otherwise, add to "new" clause
+                new.append(Clause(resolved))
+        
+        # if no new clauses to add to KB, the KB is satisfiable
+        new_set = set([str(clause) for clause in new])
+        # check new_set is a subset of the KB
+        if (new_set <= kb_set):
+            return True
+        
+        # otherwise, add any new clauses to the KB
+        kb += new
+        count += 1
 
 def resolve_clauses(clause_i: Clause, clause_j: Clause):
     """Resolves two clauses and returns the result

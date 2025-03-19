@@ -5,10 +5,12 @@ class Predicate:
         self.args = args
     
     def __str__(self):
-        return self.name
+        str_args = ",".join([str(arg) for arg in self.args])
+        return f"{'!' if self.negated else ''}{self.name}({str_args})"
     
     def __repr__(self):
-        return self.name
+        str_args = ",".join([str(arg) for arg in self.args])
+        return f"{'!' if self.negated else ''}{self.name}({str_args})"
     
     def __eq__(self, value):
         return self.name == value.name
@@ -28,11 +30,8 @@ class Clause:
     def __init__(self, predicates: list[Predicate]):
         self.predicates = predicates
 
-    def __hash__(self):
-        return hash(self.str_clause)
-    
     def __str__(self):
-        return self.str_clause
+        return " ".join([str(pred) for pred in self.predicates])
 
 class Constant:
     def __init__(self, name: str):
