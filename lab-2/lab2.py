@@ -210,13 +210,7 @@ if __name__ == "__main__":
         clause_obj = Clause(preds)
         kb.append(clause_obj)
 
-    # print([str(x) for x in kb])
 
     # resolve KB, if we find empty clause, resolution() returns False
     # and we can return "no", otherwise we say "yes"
     print("yes" if resolution(kb) else "no")
-
-    # print(preds[0])
-    # print(next(iter(preds[0].args)))
-    # print(preds[1])
-    # print(next(iter(preds[1].args)))
