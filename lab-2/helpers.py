@@ -6,7 +6,7 @@ class Predicate:
     
     def __str__(self):
         str_args = ",".join([str(arg) for arg in self.args])
-        return f"{'!' if self.negated else ''}{self.name}({str_args})"
+        return f"{'!' if self.negated else ''}{self.name}{f'({str_args})' if str_args else ''}"
     
     def __repr__(self):
         return self.__str__()

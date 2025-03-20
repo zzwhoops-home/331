@@ -92,7 +92,12 @@ def process_clause(clause: str):
         # if we are only dealing with prop logic, ignore this step
         pred_ind = p.index("(") if "(" in p else None
         if (not pred_ind):
+            # get predicate name
             pred = p[1:] if negated else p
+
+            # create predicate and add the object
+            pred_obj = Predicate(name=pred, negated=negated, args=[])
+            predicates.append(pred_obj)
         else:
             # get predicate name
             pred = p[1:p.index("(")] if negated else p[:p.index("(")]
@@ -137,6 +142,7 @@ def resolution(kb):
         # if new is a subset of clauses return True
         new_str = set([str(clause) for clause in new])
         clauses_str = set([str(clause) for clause in clauses])
+        # print("new: ", new_str, "\nkb: ", clauses_str, "\n\n")
         if (new_str.issubset(clauses_str)):
             return True
 
@@ -171,17 +177,21 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
 
     if (not resolved_pred):
         # no resolvents, but not empty
-        # print("no resolution: ", new_predicates_i, new_predicates_j)
         return ([], False)
 
-
     new_i, new_j = resolved_pred
-    # print("yes: ", new_predicates_i, new_predicates_j, end=" ")
     new_predicates_i.remove(new_i)
     new_predicates_j.remove(new_j)
     # return the two sets of predicates resolved
     resolvents = new_predicates_i + new_predicates_j
-    # print("resolved: ", resolvents)
+
+    # check for tautologies, don't return resolvents in that case
+    literals = set()
+    for pred in resolvents:
+        if (f"!{str(pred)}" in literals or str(pred).replace("!", "") in literals):
+            return ([], False)
+        literals.add(str(pred))
+
     return (resolvents, len(resolvents) == 0)
 
 def arg_matches(args_i, args_j):
