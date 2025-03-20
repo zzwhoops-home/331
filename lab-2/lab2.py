@@ -124,18 +124,17 @@ def resolution():
         kb_set = set([str(clause) for clause in kb])
 
         # check all pairs
-        for i in range(0, length - 1):
-            for j in range(i + 1, length):
+        for clause_i in kb:
+            for clause_j in kb:
                 # get current pair c_i and c_j
-                clause_i = kb[i]
-                clause_j = kb[j]
-                resolved = resolve_clauses(clause_i, clause_j)
-                # check for empty clause. if we find one, then DB is unsatisfiable
-                if (not resolved):
-                    return False
-                
-                # otherwise, add to "new" clause
-                new.append(Clause(resolved))
+                if (clause_i != clause_j):
+                    resolved, empty = resolve_clauses(clause_i, clause_j)
+                    # check for empty clause. if we find one, then DB is unsatisfiable
+                    if (not resolved and empty):
+                        return False
+                    
+                    # otherwise, add to "new" clause
+                    new.append(Clause(resolved))
         # if no new clauses to add to KB, the KB is satisfiable
         new_set = set([str(clause) for clause in new])
         # check new_set is a subset of the KB
@@ -173,13 +172,15 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
             break
 
     if (not resolved_pred):
-        return new_predicates_i + new_predicates_j
+        # no resolvents, but not empty
+        return ([], False)
 
     new_i, new_j = resolved_pred
     new_predicates_i.remove(new_i)
     new_predicates_j.remove(new_j)
     # return the two sets of predicates resolved
-    return new_predicates_i + new_predicates_j
+    resolvents = new_predicates_i + new_predicates_j
+    return (resolvents, len(resolvents) == 0)
 
 def arg_matches(args_i, args_j):
     """Takes two sets of arguments (constants, variables, or functions)

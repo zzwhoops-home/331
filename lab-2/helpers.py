@@ -15,6 +15,9 @@ class Predicate:
     def __eq__(self, value):
         return str(self) == str(value)
     
+    def __hash__(self):
+        return hash("p" + str(self))
+    
     def matches(self, predicate):
         """Custom function comparing two predicates. Used to check if two predicates match
 
@@ -32,6 +35,9 @@ class Clause:
 
     def __str__(self):
         return " ".join([str(pred) for pred in self.predicates])
+    
+    def __hash__(self):
+        return hash("cl" + str(self))
 
 class Constant:
     def __init__(self, name: str):
