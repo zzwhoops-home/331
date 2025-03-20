@@ -108,41 +108,39 @@ def process_clause(clause: str):
 
     return predicates
 
-def resolution():
-    global kb
-
+def resolution(kb):
     length = len(kb)
 
     # if we're already done
-    if (length == 0 or length == 1):
+    if (length <= 1):
         return True
     
-    new = []
+    # set to keep track of new clauses
+    clauses = set(kb)
 
     while (True):
-        # get KB string representations for checking set subset
-        kb_set = set([str(clause) for clause in kb])
-
-        # check all pairs
-        for clause_i in kb:
-            for clause_j in kb:
-                # get current pair c_i and c_j
-                if (clause_i != clause_j):
-                    resolved, empty = resolve_clauses(clause_i, clause_j)
-                    # check for empty clause. if we find one, then DB is unsatisfiable
-                    if (not resolved and empty):
-                        return False
-                    
-                    # otherwise, add to "new" clause
-                    new.append(Clause(resolved))
-        # if no new clauses to add to KB, the KB is satisfiable
-        new_set = set([str(clause) for clause in new])
-        # check new_set is a subset of the KB
-        if (new_set <= kb_set):
-            return True
+        new = set()
         
-        # otherwise, add any new clauses to the KB
-        kb += new
+        for clause_i in clauses:
+            for clause_j in clauses:
+                if (clause_i != clause_j):
+                    resolvents, empty = resolve_clauses(clause_i=clause_i, clause_j=clause_j)
+
+                    if (not resolvents and empty):
+                        return False
+                    elif (resolvents and empty):
+                        continue
+                    elif (resolvents and not empty):
+                        resolved_clause = Clause(resolvents)
+                        new.add(resolved_clause)
+        
+        # if new is a subset of clauses return True
+        new_str = set([str(clause) for clause in new])
+        clauses_str = set([str(clause) for clause in clauses])
+        if (new_str.issubset(clauses_str)):
+            return True
+
+        clauses.update(new)
 
 def resolve_clauses(clause_i: Clause, clause_j: Clause):
     """Resolves two clauses and returns the result
@@ -173,13 +171,17 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
 
     if (not resolved_pred):
         # no resolvents, but not empty
+        # print("no resolution: ", new_predicates_i, new_predicates_j)
         return ([], False)
 
+
     new_i, new_j = resolved_pred
+    # print("yes: ", new_predicates_i, new_predicates_j, end=" ")
     new_predicates_i.remove(new_i)
     new_predicates_j.remove(new_j)
     # return the two sets of predicates resolved
     resolvents = new_predicates_i + new_predicates_j
+    # print("resolved: ", resolvents)
     return (resolvents, len(resolvents) == 0)
 
 def arg_matches(args_i, args_j):
@@ -212,7 +214,7 @@ if __name__ == "__main__":
 
     # resolve KB, if we find empty clause, resolution() returns False
     # and we can return "no", otherwise we say "yes"
-    print("yes" if resolution() else "no")
+    print("yes" if resolution(kb) else "no")
 
     # print(preds[0])
     # print(next(iter(preds[0].args)))

@@ -9,14 +9,13 @@ class Predicate:
         return f"{'!' if self.negated else ''}{self.name}({str_args})"
     
     def __repr__(self):
-        str_args = ",".join([str(arg) for arg in self.args])
-        return f"{'!' if self.negated else ''}{self.name}({str_args})"
+        return self.__str__()
     
     def __eq__(self, value):
         return str(self) == str(value)
     
     def __hash__(self):
-        return hash("p" + str(self))
+        return hash("pr" + str(self))
     
     def matches(self, predicate):
         """Custom function comparing two predicates. Used to check if two predicates match
