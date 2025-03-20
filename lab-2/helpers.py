@@ -13,7 +13,7 @@ class Predicate:
         return f"{'!' if self.negated else ''}{self.name}({str_args})"
     
     def __eq__(self, value):
-        return self.name == value.name
+        return str(self) == str(value)
     
     def matches(self, predicate):
         """Custom function comparing two predicates. Used to check if two predicates match

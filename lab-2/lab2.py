@@ -54,18 +54,18 @@ def process_terms(str_terms: list[str]):
     """
     global terms
 
-    processed_terms = set()
+    processed_terms = []
 
     for term in str_terms:
         if (term in terms["consts"]):
             const = Constant(name=term)
-            processed_terms.add(const)
+            processed_terms.append(const)
         elif (term in terms["vars"]):
             var = Variable(name=term)
-            processed_terms.add(var)
+            processed_terms.append(var)
         elif (term in terms["funcs"]):
             func = Function(name=term)
-            processed_terms.add(func)
+            processed_terms.append(func)
 
     return processed_terms
 
@@ -89,20 +89,22 @@ def process_clause(clause: str):
         # get negation
         negated = True if p[0] == '!' else False
 
-        # get predicate name
-        if (negated):
-            pred = p[1:p.index("(")]
+        # if we are only dealing with prop logic, ignore this step
+        pred_ind = p.index("(") if "(" in p else None
+        if (not pred_ind):
+            pred = p[1:] if negated else p
         else:
-            pred = p[:p.index("(")]
+            # get predicate name
+            pred = p[1:p.index("(")] if negated else p[:p.index("(")]
 
-        # get result between parentheses (terms)
-        result = re.search(r"\((.*)\)", p).group(1)
-        str_terms = result.split(",")
+            # get result between parentheses (terms)
+            result = re.search(r"\((.*)\)", p).group(1)
+            str_terms = result.split(",")
 
-        processed_terms = process_terms(str_terms=str_terms)
+            processed_terms = process_terms(str_terms=str_terms)
 
-        pred_obj = Predicate(name=pred, negated=negated, args=processed_terms)
-        predicates.append(pred_obj)
+            pred_obj = Predicate(name=pred, negated=negated, args=processed_terms)
+            predicates.append(pred_obj)
 
     return predicates
 
@@ -117,10 +119,7 @@ def resolution():
     
     new = []
 
-    count = 0
     while (True):
-        if (count == 2):
-            break
         # get KB string representations for checking set subset
         kb_set = set([str(clause) for clause in kb])
 
@@ -137,7 +136,6 @@ def resolution():
                 
                 # otherwise, add to "new" clause
                 new.append(Clause(resolved))
-        
         # if no new clauses to add to KB, the KB is satisfiable
         new_set = set([str(clause) for clause in new])
         # check new_set is a subset of the KB
@@ -146,7 +144,6 @@ def resolution():
         
         # otherwise, add any new clauses to the KB
         kb += new
-        count += 1
 
 def resolve_clauses(clause_i: Clause, clause_j: Clause):
     """Resolves two clauses and returns the result
@@ -158,25 +155,35 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
     Returns:
         Clause: the resolved clauses
     """
+    resolved_pred = None
+    new_predicates_i = clause_i.predicates[:]
+    new_predicates_j = clause_j.predicates[:]
+
     for predicate_i in clause_i.predicates:
         for predicate_j in clause_j.predicates:
-            if (predicate_i.name != predicate_j.name):
-                continue
-            args_i = predicate_i.args
-            args_j = predicate_j.args
-            if (arg_matches(args_i, args_j)):
+            # ensure the two predicates have the same name and are not exactly the same
+            if (predicate_i.name == predicate_j.name and predicate_i != predicate_j):
+                # check that arguments match and
                 # check if the two clauses are opposites of each other
-                # if so, remove the instances
-                if (predicate_i.negated != predicate_j.negated):
-                    clause_i.predicates.remove(predicate_i)
-                    clause_j.predicates.remove(predicate_j)
+                if (arg_matches(predicate_i.args, predicate_j.args) and predicate_i.negated != predicate_j.negated):
+                    # if so, remove the instances
+                    resolved_pred = (predicate_i, predicate_j)
+                    break
+        if (resolved_pred):
+            break
 
+    if (not resolved_pred):
+        return new_predicates_i + new_predicates_j
+
+    new_i, new_j = resolved_pred
+    new_predicates_i.remove(new_i)
+    new_predicates_j.remove(new_j)
     # return the two sets of predicates resolved
-    return clause_i.predicates + clause_j.predicates
+    return new_predicates_i + new_predicates_j
 
 def arg_matches(args_i, args_j):
     """Takes two sets of arguments (constants, variables, or functions)
-    and checks if the arguments match by using a set comparison
+    and checks if the arguments match exactly
 
     Args:
         args_i (_type_): list of arguments for clause i
@@ -185,7 +192,11 @@ def arg_matches(args_i, args_j):
     Returns:
         bool: True if the arguments match, False if they do not
     """
-    return len(args_i - args_j) == 0
+    for i in range(len(args_i)):
+        if (args_i[i] != args_j[i]):
+            return False
+
+    return True
 
 if __name__ == "__main__":
     clauses = process_file()
