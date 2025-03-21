@@ -44,6 +44,9 @@ class Constant:
 
     def __str__(self):
         return self.name
+    
+    def __repr__(self):
+        return str(self)
 
     def __eq__(self, value):
         return self.name == value
@@ -68,12 +71,12 @@ class Variable:
         return hash("var" + self.name)
 
 class Function:
-    def __init__(self, name: str, term: Variable):
+    def __init__(self, name: str, var: Variable):
         self.name = name
-        self.term = term
+        self.var = var
 
     def __str__(self):
-        return f"{self.name}({str(self.term)})"
+        return f"{self.name}({str(self.var)})"
     
     def __repr__(self):
         return str(self)

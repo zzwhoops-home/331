@@ -50,22 +50,29 @@ def process_terms(str_terms: list[str]):
         terms (list[str]): a list of string terms
 
     Returns:
-        set[Constant | Variable | Function]: A set of processed terms into objects
+        list[Constant | Variable | Function]: A list of processed terms into objects
     """
     global terms
 
     processed_terms = []
 
     for term in str_terms:
-        if (term in terms["consts"]):
+        # check for function (has parentheses)
+        func_check = term.index("(") if '(' in term else None
+        if (func_check and term[:func_check] in terms["funcs"]):
+            # get result between parentheses, if it exists (terms)
+            result = re.search(r"\((.*)\)", term).group(1)
+            func_var = Variable(name=result)
+
+            # create function
+            func = Function(name=term[:func_check], var=func_var)
+            processed_terms.append(func)
+        elif (term in terms["consts"]):
             const = Constant(name=term)
             processed_terms.append(const)
         elif (term in terms["vars"]):
             var = Variable(name=term)
             processed_terms.append(var)
-        elif (term in terms["funcs"]):
-            func = Function(name=term)
-            processed_terms.append(func)
 
     return processed_terms
 
@@ -211,6 +218,9 @@ def arg_matches(args_i, args_j):
 
     return True
 
+def unify():
+    pass
+
 if __name__ == "__main__":
     clauses = process_file()
 
@@ -219,7 +229,9 @@ if __name__ == "__main__":
 
         clause_obj = Clause(preds)
         kb.append(clause_obj)
+        # print([x.args for x in clause_obj.predicates])
 
+    exit()
 
     # resolve KB, if we find empty clause, resolution() returns False
     # and we can return "no", otherwise we say "yes"
