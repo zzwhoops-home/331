@@ -218,8 +218,45 @@ def arg_matches(args_i, args_j):
 
     return True
 
-def unify():
-    pass
+def unify(x, y, t={}):
+    if (t is None):
+        print("fail")
+        return None
+    elif (x == y):
+        return t
+    elif (type(x) == Variable):
+        return unify_var(x, y, t)
+    elif (type(y) == Variable):
+        return unify_var(y, x, t)
+    elif (type(x) == Function and type(y) == Function):
+        arg_x = x.var
+        arg_y = y.var
+        return unify(arg_x, arg_y, unify(x.name, y.name, t)) # nested
+    else:
+        return None
+
+def unify_var(var, x, t):
+    """Attempts to unify the variable and given x with the provided substitution set
+
+    Args:
+        var (_type_): _description_
+        x (_type_): _description_
+        t (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    if (var in t):
+        # if the variable is in the subsitution set, attempt to unify it with the value
+        val = t[var]
+        return unify(val, x, t)
+    elif (x in t):
+        val = t[x]
+        return unify(var, val, t)
+    else:
+        t[var] = x
+        return t
+
 
 if __name__ == "__main__":
     clauses = process_file()
@@ -229,9 +266,8 @@ if __name__ == "__main__":
 
         clause_obj = Clause(preds)
         kb.append(clause_obj)
-        # print([x.args for x in clause_obj.predicates])
+        print([x.args for x in clause_obj.predicates])
 
-    exit()
 
     # resolve KB, if we find empty clause, resolution() returns False
     # and we can return "no", otherwise we say "yes"
