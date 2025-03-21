@@ -169,16 +169,20 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
     new_predicates_i = clause_i.predicates[:]
     new_predicates_j = clause_j.predicates[:]
 
-    for predicate_i in clause_i.predicates:
-        for predicate_j in clause_j.predicates:
+    for predicate_i in new_predicates_i:
+        for predicate_j in new_predicates_j:
             # ensure the two predicates have the same name and are not exactly the same
-            if (predicate_i.name == predicate_j.name and predicate_i != predicate_j):
-                # check that arguments match and
+            if (predicate_i.name == predicate_j.name and str(predicate_i) != str(predicate_j)):
                 # check if the two clauses are opposites of each other
-                if (arg_matches(predicate_i.args, predicate_j.args) and predicate_i.negated != predicate_j.negated):
-                    # if so, remove the instances
-                    resolved_pred = (predicate_i, predicate_j)
-                    break
+                if (predicate_i.negated != predicate_j.negated):
+                    # if the arguments match, no unification is needed
+                    if (arg_matches(predicate_i.args, predicate_j.args)):
+                        # if so, remove the instances
+                        resolved_pred = (predicate_i, predicate_j)
+                        break
+                    # if the two clauses are the same and opposites only, see if they unify
+                    else:
+                        unify()
         if (resolved_pred):
             break
 
@@ -257,7 +261,6 @@ def unify_var(var, x, t):
         t[var] = x
         return t
 
-
 if __name__ == "__main__":
     clauses = process_file()
 
@@ -266,8 +269,7 @@ if __name__ == "__main__":
 
         clause_obj = Clause(preds)
         kb.append(clause_obj)
-        print([x.args for x in clause_obj.predicates])
-
+        # print([x.args for x in clause_obj.predicates])
 
     # resolve KB, if we find empty clause, resolution() returns False
     # and we can return "no", otherwise we say "yes"
