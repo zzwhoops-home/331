@@ -55,7 +55,31 @@ class Variable:
     def __init__(self, name: str):
         self.name = name
 
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, value):
+        return self.name == value
+
+    def __hash__(self):
+        return hash("var" + self.name)
+
 class Function:
-    def __init__(self, name: str):
-        # needs to include independent term since funcs depend on vars
+    def __init__(self, name: str, term: Variable):
         self.name = name
+        self.term = term
+
+    def __str__(self):
+        return f"{self.name}({str(self.term)})"
+    
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, value):
+        return str(self) == str(value)
+    
+    def __hash__(self):
+        return hash("fun" + str(self))
