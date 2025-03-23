@@ -1,6 +1,7 @@
 import sys
 from helpers import Clause, Predicate, Constant, Variable, Function
 import re
+import copy
 
 # get command line args
 args = sys.argv
@@ -154,6 +155,7 @@ def resolution(kb):
             return True
 
         clauses.update(new)
+        # print([str(c) for c in clauses])
 
 def resolve_clauses(clause_i: Clause, clause_j: Clause):
     """Resolves two clauses and returns the result
@@ -166,8 +168,11 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
         Clause: the resolved clauses
     """
     resolved_pred = None
-    new_predicates_i = clause_i.predicates[:]
-    new_predicates_j = clause_j.predicates[:]
+    new_predicates_i = copy.deepcopy(clause_i.predicates)
+    new_predicates_j = copy.deepcopy(clause_j.predicates)
+    
+    # keep track of current substitutions
+    theta = {}
 
     for predicate_i in new_predicates_i:
         for predicate_j in new_predicates_j:
@@ -177,18 +182,47 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
                 if (predicate_i.negated != predicate_j.negated):
                     # if the arguments match, no unification is needed
                     if (arg_matches(predicate_i.args, predicate_j.args)):
-                        # if so, remove the instances
+                        # create tuple to remove instances as they have been resolved by unifying
                         resolved_pred = (predicate_i, predicate_j)
                         break
                     # if the two clauses are the same and opposites only, see if they unify
                     else:
-                        unify()
+                        # print(predicate_i, predicate_j, end=" ")
+                        # new arguments
+                        new_args_i = predicate_i.args[:]
+                        new_args_j = predicate_j.args[:]
+
+                        uni_res = unify(new_args_i, new_args_j, t=theta)
+                        
+                        if (uni_res):
+                            theta.update(uni_res)
+
+                            # create tuple to remove instances as they have been resolved by unifying
+                            resolved_pred = (predicate_i, predicate_j)
+                            break
         if (resolved_pred):
             break
 
     if (not resolved_pred):
         # no resolvents, but not empty
         return ([], False)
+
+    if (theta):
+        for pred_i in new_predicates_i:
+            args = pred_i.args
+            for i in range(len(args)):
+                if (args[i] in theta):
+                    # print(args[i], " dict: ", theta[args[i]])
+                    args[i] = theta[args[i]]
+
+        for pred_j in new_predicates_j:
+            args = pred_j.args
+            for i in range(len(args)):
+                if (args[i] in theta):
+                    # print(args[i], " dict: ", theta[args[i]])
+                    args[i] = theta[args[i]]
+
+    # print(new_predicates_i, new_predicates_j)
 
     new_i, new_j = resolved_pred
     new_predicates_i.remove(new_i)
@@ -224,7 +258,6 @@ def arg_matches(args_i, args_j):
 
 def unify(x, y, t={}):
     if (t is None):
-        print("fail")
         return None
     elif (x == y):
         return t
@@ -255,7 +288,7 @@ def unify_var(var, x, t):
         _type_: _description_
     """
     if (var in t):
-        # if the variable is in the subsitution set, attempt to unify it with the value
+        # if the variable is in the substitution set, attempt to unify it with the value
         val = t[var]
         return unify(val, x, t)
     elif (x in t):
