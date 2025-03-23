@@ -235,7 +235,11 @@ def unify(x, y, t={}):
     elif (type(x) == Function and type(y) == Function):
         arg_x = x.var
         arg_y = y.var
+        # recursively unify if we have functions
         return unify(arg_x, arg_y, unify(x.name, y.name, t)) # nested
+    elif(type(x) == list and type(y) == list):
+        # recursively unify if in a list
+        return unify(x[1:], y[1:], unify(x[0], y[0], t)) # nested
     else:
         return None
 
