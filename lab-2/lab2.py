@@ -150,12 +150,10 @@ def resolution(kb):
         # if new is a subset of clauses return True
         new_str = set([str(clause) for clause in new])
         clauses_str = set([str(clause) for clause in clauses])
-        # print("new: ", new_str, "\nkb: ", clauses_str, "\n\n")
         if (new_str.issubset(clauses_str)):
             return True
 
         clauses.update(new)
-        # print([str(c) for c in clauses])
 
 def resolve_clauses(clause_i: Clause, clause_j: Clause):
     """Resolves two clauses and returns the result
@@ -187,7 +185,6 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
                         break
                     # if the two clauses are the same and opposites only, see if they unify
                     else:
-                        # print(predicate_i, predicate_j, end=" ")
                         # new arguments
                         new_args_i = predicate_i.args[:]
                         new_args_j = predicate_j.args[:]
@@ -212,17 +209,13 @@ def resolve_clauses(clause_i: Clause, clause_j: Clause):
             args = pred_i.args
             for i in range(len(args)):
                 if (args[i] in theta):
-                    # print(args[i], " dict: ", theta[args[i]])
                     args[i] = theta[args[i]]
 
         for pred_j in new_predicates_j:
             args = pred_j.args
             for i in range(len(args)):
                 if (args[i] in theta):
-                    # print(args[i], " dict: ", theta[args[i]])
                     args[i] = theta[args[i]]
-
-    # print(new_predicates_i, new_predicates_j)
 
     new_i, new_j = resolved_pred
     new_predicates_i.remove(new_i)
@@ -306,7 +299,6 @@ if __name__ == "__main__":
 
         clause_obj = Clause(preds)
         kb.append(clause_obj)
-        # print([x.args for x in clause_obj.predicates])
 
     # resolve KB, if we find empty clause, resolution() returns False
     # and we can return "no", otherwise we say "yes"
