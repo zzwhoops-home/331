@@ -77,23 +77,20 @@ daughterOf(X,Y) :- female(X),childOf(X,Y).
 %sonOf(X,Y) - X is the male child of Y
 sonOf(X,Y) :- male(X),childOf(X,Y).
 
-%parentOf(X,Y) - X is a parent of Y
-parentOf(X,Y) :- childOf(Y,X).
-childOf(X,Y) :- parentOf(Y,X).
 % siblingOf(X,Y) - X is a sibling of Y
 % try and unify with '=', not identical with '\=='
-% siblingOf(X,Y):-==
+siblingOf(X,Y) :- childOf(X,P), childOf(Y,P), X \= Y.
 
 %brotherOf(X,Y) - X is the male sibling of Y
-brotherOf(X,Y):-male(X).
+brotherOf(X,Y) :- male(X), siblingOf(X,Y).
 %sisterOf(X,Y) - X is the female sibling of Y
-sisterOf(X,Y):-fail.
+sisterOf(X,Y) :- female(X), siblingOf(X,Y).
 
 % grandchildOf(X,Y) - X is a grandchild of Y
-grandchildOf(X,Y):- fail.
+grandchildOf(X,Y) :- childOf(X,P), childOf(P,Y).
 
 %ancestorOf(X,Y) - X is an ancestor of Y
-ancestorOf(X,Y):- fail.
+ancestorOf(X,Y) :- fail.
 
 %auntOf(X,Y) - X is the aunt of Y
 auntOf(X,Y):- fail.
