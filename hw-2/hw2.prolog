@@ -93,15 +93,16 @@ grandchildOf(X,Y) :- childOf(X,P), childOf(P,Y).
 ancestorOf(X,Y) :- fail.
 
 %auntOf(X,Y) - X is the aunt of Y
-auntOf(X,Y):- fail.
+% X is female, Y is a child of parent P, X is a sister of P
+auntOf(X,Y) :- female(X), childOf(Y,P), sisterOf(X,P).
 %uncleOf(X,Y) - X is the uncle of Y
-uncleOf(X,Y):- fail.
+uncleOf(X,Y) :- male(X), childOf(Y,P), brotherOf(X,P).
 
 %firstCousinOf(X,Y) - X is the first cousin of Y; i.e. one of X's parents is siblings with one of Y's parents
-firstCousinOf(X,Y):-fail.
+firstCousinOf(X,Y) :- childOf(X, P1), childOf(Y, P2), siblingOf(P1, P2), P1 \= P2.
 
 %brotherInLawOf(X,Y) - X is the brother of Y's spouse or X is the male spouse of Y's sibling
-brotherInLawOf(X,Y):-fail.
+brotherInLawOf(X,Y) :- (spouse(S,Y), brotherOf(X,S)) ; (male(X), siblingOf(SB,Y), spouse(X,SB)).
 
 %sisterInLawOf(X,Y) - X is the sister of Y's spouse or X is the female spouse of Y's sibling
-sisterInLawOf(X,Y):-fail.
+sisterInLawOf(X,Y) :- (spouse(S,Y), sisterOf(X,S)) ; (female(X), siblingOf(SB,Y), spouse(X,SB)).
