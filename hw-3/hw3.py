@@ -1,4 +1,5 @@
 import sys
+from helpers import Node
 
 # get command line args
 args = sys.argv
