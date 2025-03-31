@@ -1,6 +1,7 @@
 import sys
 from helpers import Node
 import math
+import random
 
 # get command line args
 args = sys.argv
@@ -29,6 +30,59 @@ with open("data.dat", "r") as f:
 
     total_count = sum([i for i in ex_count.values()])
 
+def build_dt(exs, attribs, parent_exs):
+    res = check_classification(exs)
+    
+    if (len(exs) == 0):
+        return majority(parent_exs)
+    elif (res):
+        return res
+    elif (len(attribs) == 0):
+        return majority(exs)
+    # else:
+    #     A = importance(attribs, examples)
+
+def check_classification(exs: list):
+    """This function checks if every example in a list is the same classification
+
+    Args:
+        exs (list): The list of examples to check
+
+    Returns:
+        str: the classification if every example is the same classification
+        None: one or more classifications differ
+    """
+    keys = exs.keys()
+    check = keys[0]
+
+    for key in keys:
+        if (key != check):
+            return None
+        
+    return check
+
+def majority(exs: list):
+    # count total of each item
+    count = {}
+    for ex in exs:
+        classification = list(ex.keys())[0]
+        if (classification not in count):
+            count[classification] = 1
+        else:
+            count[classification] += 1
+
+    # keep track of majority count and classification 
+    majority_count = 0
+    majority_classes = []
+    for key, value in count.items():
+        # if the count is greater or equal, replace
+        if (value >= majority_count):
+            majority_count = value
+            majority_classes.append(key)
+
+    choice = random.choice(majority_classes)
+    return choice
+
 def remainder(pk: int, nk: int, p: int, n: int):
     """Calculates Remainder(A)
     Importance(A) = Entropy(p / p + n) - Remainder(A)
@@ -54,7 +108,6 @@ def remainder(pk: int, nk: int, p: int, n: int):
     # remainder(A)
     remainder = left * right
     return remainder
-
 
 def entropy(p: int, n: int):
     """Helper function which calculates entropy of a Boolean rv
@@ -83,12 +136,5 @@ def entropy(p: int, n: int):
     return result
 
 if __name__ == "__main__":
-    # print(examples)'
-    gain = 1
-    gain -= remainder(0, 2, 6, 6)
-    gain -= remainder(4, 0, 6, 6)
-    gain -= remainder(2, 4, 6, 6)
-
-    print(gain)
+    print(majority(examples))
     print(ex_count)
-    print(total_count)
