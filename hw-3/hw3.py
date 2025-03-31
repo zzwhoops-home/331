@@ -8,12 +8,17 @@ args = sys.argv
 data = args[1]
 
 examples = []
+attributes = []
 ex_count = {}
 total_count = 0
+
+POS_EX = "A"
+NEG_EX = "B"
 
 with open("data.dat", "r") as f:
     lines = f.readlines()
 
+    # for each example, format as {classification: [attributes]}
     for line in lines:
         line_list = line.strip().split(" ")
         attribs = line_list[:-1]
@@ -23,12 +28,18 @@ with open("data.dat", "r") as f:
             result: attribs
         })
 
+        # count up classifications
         if (result not in ex_count):
             ex_count[result] = 1
         else:
             ex_count[result] += 1
 
+    # get total count
     total_count = sum([i for i in ex_count.values()])
+
+    # attributes can be numbered from 0 to # attributes - 1
+    attribute_count = len(list(examples[0].values())[0])
+    attributes = [i for i in range(attribute_count)]
 
 def build_dt(exs, attribs, parent_exs):
     res = check_classification(exs)
@@ -39,8 +50,63 @@ def build_dt(exs, attribs, parent_exs):
         return res
     elif (len(attribs) == 0):
         return majority(exs)
-    # else:
-    #     A = importance(attribs, examples)
+    else:
+        A = max_importance(attribs, examples)
+        print(A)
+
+def max_importance(attribs, exs):
+    max_attrib = None
+    max_attrib_importance = float("-inf")
+    
+    for attrib in attribs:
+        val = importance(attrib, exs)
+        if (val > max_attrib_importance):
+            max_attrib_importance = val
+            max_attrib = attrib
+    
+    return max_attrib
+
+def importance(a, exs):
+    pos, neg = importance_counter(exs)
+    # find subsets
+    subsets = {}
+
+    # count current set pos/neg examples
+    for ex in exs:
+        # split apart into subsets
+        attribute = list(ex.values())[0][a]
+        if (attribute not in subsets):
+            subsets[attribute] = [ex]
+        else:
+            subsets[attribute].append(ex)
+
+    # get entropy to subtract from
+    importance_entropy = entropy(pos, neg)
+
+    remainder_entropy = 0
+    # count positive/negative in subsets to find remainder
+    for values in subsets.values():
+        pos_k, neg_k = importance_counter(values)
+        remainder_entropy += remainder(pk=pos_k, nk=neg_k, p=pos, n=neg)
+
+    gain = importance_entropy - remainder_entropy
+    return gain
+
+def importance_counter(exs):
+    pos = 0
+    neg = 0
+
+    for ex in exs:
+        classification = list(ex.keys())[0]
+        if (classification == POS_EX):
+            pos += 1
+        elif (classification == NEG_EX):
+            neg += 1
+        else:
+            print("Make sure you change the pos/neg examples!!")
+    
+    # returns (pos, neg) tuple for access
+    return (pos, neg)
 
 def check_classification(exs: list):
     """This function checks if every example in a list is the same classification
@@ -136,5 +202,5 @@ def entropy(p: int, n: int):
     return result
 
 if __name__ == "__main__":
-    print(majority(examples))
-    print(ex_count)
+    # print(majority(examples))
+    print(max_importance(attributes, examples))
