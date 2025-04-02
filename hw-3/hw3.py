@@ -53,7 +53,7 @@ def read_file(filename: str):
         attribute_count = len(list(examples[0].values())[0])
         attributes = [i for i in range(attribute_count)]
 
-def build_dt(exs, attribs, parent_exs = None):
+def build_dt(exs, attribs, parent_exs=None, depth=0, max_depth=None):
     """Builds a decision tree from a list of examples, attributes, and parent examples
 
     Args:
@@ -80,32 +80,34 @@ def build_dt(exs, attribs, parent_exs = None):
         maj = majority(exs)
         return Node(attribute=None, examples=exs, children=[], label=maj)
     
+    # base case: max depth reached
+    if (max_depth is not None and depth >= max_depth):
+        maj = majority(exs)
+        return Node(attribute=None, examples=exs, children=[], label=maj)
+
     # otherwise, find best attribute to split on
-    else:
-        # find attribute of max importance
-        A = max_importance(attribs, exs=exs)
-        
-        # create tree node
-        tree = Node(attribute=A, examples=exs, children=[])
+    # find attribute of max importance
+    A = max_importance(attribs, exs=exs)
+    
+    # create tree node
+    tree = Node(attribute=A, examples=exs, children=[])
 
-        # get unique values of A
-        values = unique_attrib_vals[A]
+    # get unique values of A
+    values = unique_attrib_vals[A]
 
-        # next tree should not consider attribute A
-        split_attributes = attribs[:]
-        split_attributes.remove(A)
+    # next tree should not consider attribute A
+    split_attributes = attribs[:]
+    split_attributes.remove(A)
 
-        # iterate through values, recursively build subtrees
-        for v in values:
-            split_exs = [ex for ex in exs if list(ex.values())[0][A] == v]
-            subtree = build_dt(exs=split_exs, attribs=split_attributes, parent_exs=examples)
-            if (subtree.value is None):
-                subtree.value = v
-            if (subtree.label):
-                subtree.value = subtree.label
-            tree.add_child(subtree)
+    # iterate through values, recursively build subtrees
+    for v in values:
+        split_exs = [ex for ex in exs if list(ex.values())[0][A] == v]
+        subtree = build_dt(exs=split_exs, attribs=split_attributes, parent_exs=examples, depth=depth + 1, max_depth=max_depth)
+        if (subtree.value is None):
+            subtree.value = v
+        tree.add_child(subtree)
 
-        return tree
+    return tree
 
 def visualize_dt(node, graph=None, parent_name=None, edge_label=None):
     if graph is None:
@@ -307,7 +309,7 @@ if __name__ == "__main__":
     # get unique values for each attribute (should be just T / F)
     get_unique_attrib_vals(exs=examples)
 
-    dt = build_dt(exs=examples, attribs=attributes)
+    dt = build_dt(exs=examples, attribs=attributes, max_depth=2)
 
     dt_graph = visualize_dt(dt)
     dt_graph.render('T/F Decision Tree', view=True)
