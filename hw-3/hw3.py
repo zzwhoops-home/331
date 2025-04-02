@@ -82,6 +82,14 @@ def build_dt(exs, attribs, parent_exs = None):
         tree = Node(attribute=A, examples=exs, children=[])
 
         # get unique values of A
+        values = unique_attrib_vals[A]
+
+        # iterate through values, recursively build subtrees
+        for v in values:
+            split_exs = [ex for ex in exs if list(ex.values())[0][A] == v]
+            split_attributes = attributes[:].remove(A)
+            subtree = build_dt(exs=split_exs, attribs=split_attributes, parent_exs=examples)
+            # print([list(ex.values())[0][A] for ex in split_exs])
 
         return tree
 
