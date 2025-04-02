@@ -2,6 +2,7 @@ import sys
 from helpers import Node
 import math
 import random
+from graphviz import Digraph
 
 # get command line args
 args = sys.argv
@@ -64,26 +65,25 @@ def build_dt(exs, attribs, parent_exs = None):
         _type_: _description_
     """
     res = check_classification(exs)
-    print(res)
     
     # base case: if no examples left, return majority value of parent examples
     if (len(exs) == 0):
         maj = majority(parent_exs)
-        return Node(attribute=None, examples=[], children=[], value=maj)
+        return Node(attribute=None, examples=[], children=[], label=maj)
     
     # base case: if all examples of the same classification, return the classification
     elif (res):
-        return Node(attribute=None, examples=examples, children=None, value=res)
+        return Node(attribute=None, examples=exs, children=[], label=res)
     
     # base case: if there are no more attributes to split on, return majority value of examples
     elif (len(attribs) == 0):
         maj = majority(exs)
-        return Node(attribute=None, examples=examples, children=[], value=maj)
+        return Node(attribute=None, examples=exs, children=[], label=maj)
     
     # otherwise, find best attribute to split on
     else:
         # find attribute of max importance
-        A = max_importance(attribs, examples)
+        A = max_importance(attribs, exs=exs)
         
         # create tree node
         tree = Node(attribute=A, examples=exs, children=[])
@@ -99,10 +99,36 @@ def build_dt(exs, attribs, parent_exs = None):
         for v in values:
             split_exs = [ex for ex in exs if list(ex.values())[0][A] == v]
             subtree = build_dt(exs=split_exs, attribs=split_attributes, parent_exs=examples)
-            subtree.value = v
+            if (subtree.value is None):
+                subtree.value = v
+            if (subtree.label):
+                subtree.value = subtree.label
             tree.add_child(subtree)
 
         return tree
+
+def visualize_dt(node, graph=None, parent_name=None, edge_label=None):
+    if graph is None:
+        graph = Digraph(format='png')
+        graph.attr(size='96')
+
+    node_name = str(id(node))
+
+    if (node.attribute is not None):
+        label = f"{node.attribute}: {len(node.examples)}"
+    else:
+        label = f"Leaf: {node.label} ({len(node.examples)})"
+
+    graph.node(name=node_name, label=label)
+
+    if (parent_name):
+        graph.edge(tail_name=parent_name, head_name=node_name, label=edge_label)
+
+    if (node.children):
+        for child in node.children:
+            visualize_dt(node=child, graph=graph, parent_name=node_name, edge_label=str(child.value))
+
+    return graph
 
 def max_importance(attribs, exs):
     max_attrib = None
@@ -277,9 +303,11 @@ def get_unique_attrib_vals(exs: list):
 if __name__ == "__main__":
     # read input file and extract attributes / outputs
     read_file(filename="data.dat")
-
     # print(majority(exs=examples))
     # get unique values for each attribute (should be just T / F)
     get_unique_attrib_vals(exs=examples)
 
-    print(build_dt(exs=examples, attribs=attributes))
+    dt = build_dt(exs=examples, attribs=attributes)
+
+    dt_graph = visualize_dt(dt)
+    dt_graph.render('T/F Decision Tree', view=True)
