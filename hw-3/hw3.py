@@ -9,50 +9,82 @@ data = args[1]
 
 examples = []
 attributes = []
+unique_attrib_vals = {}
 ex_count = {}
 total_count = 0
 
 POS_EX = "A"
 NEG_EX = "B"
 
-with open("data.dat", "r") as f:
-    lines = f.readlines()
+def read_file(filename: str):
+    """Helper function to read in file and load attributes
 
-    # for each example, format as {classification: [attributes]}
-    for line in lines:
-        line_list = line.strip().split(" ")
-        attribs = line_list[:-1]
-        result = line_list[-1]
+    Args:
+        filename (str): Path to file
+    """
+    global examples
+    global total_count
+    global attributes
 
-        examples.append({
-            result: attribs
-        })
+    with open(filename, "r") as f:
+        lines = f.readlines()
 
-        # count up classifications
-        if (result not in ex_count):
-            ex_count[result] = 1
-        else:
-            ex_count[result] += 1
+        # for each example, format as {classification: [attributes]}
+        for line in lines:
+            line_list = line.strip().split(" ")
+            attribs = line_list[:-1]
+            result = line_list[-1]
 
-    # get total count
-    total_count = sum([i for i in ex_count.values()])
+            examples.append({
+                result: attribs
+            })
 
-    # attributes can be numbered from 0 to # attributes - 1
-    attribute_count = len(list(examples[0].values())[0])
-    attributes = [i for i in range(attribute_count)]
+            # count up classifications
+            if (result not in ex_count):
+                ex_count[result] = 1
+            else:
+                ex_count[result] += 1
 
-def build_dt(exs, attribs, parent_exs):
+        # get total count
+        total_count = sum([i for i in ex_count.values()])
+
+        # attributes can be numbered from 0 to # attributes - 1
+        attribute_count = len(list(examples[0].values())[0])
+        attributes = [i for i in range(attribute_count)]
+
+def build_dt(exs, attribs, parent_exs = None):
+    """Builds a decision tree from a list of examples, attributes, and parent examples
+
+    Args:
+        exs (_type_): _description_
+        attribs (_type_): _description_
+        parent_exs (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     res = check_classification(exs)
     
     if (len(exs) == 0):
+        print("a")
         return majority(parent_exs)
     elif (res):
+        print("b")
         return res
     elif (len(attribs) == 0):
+        print("c")
         return majority(exs)
     else:
+        # find attribute of max importance
         A = max_importance(attribs, examples)
-        print(A)
+        
+        # create tree node
+        tree = Node(attribute=A, examples=exs, children=[])
+
+        # get unique values of A
+
+        return tree
+
 
 def max_importance(attribs, exs):
     max_attrib = None
@@ -118,16 +150,25 @@ def check_classification(exs: list):
         str: the classification if every example is the same classification
         None: one or more classifications differ
     """
-    keys = exs.keys()
-    check = keys[0]
+    check = list(exs[0].keys())[0]
 
-    for key in keys:
-        if (key != check):
+    for ex in exs:
+        if (list(ex.keys())[0] != check):
             return None
         
     return check
 
 def majority(exs: list):
+    """This function takes in a list of examples and returns
+    the most common output value from a set of examples,
+    breaking ties randomly.
+
+    Args:
+        exs (list): A list of examples to check majority
+
+    Returns:
+        type of elements in exs: The output value in the examples provided which appears the most 
+    """
     # count total of each item
     count = {}
     for ex in exs:
@@ -201,6 +242,22 @@ def entropy(p: int, n: int):
     result = -(left + right)
     return result
 
+def get_unique_attrib_vals(exs: list):
+    """Gets a list of unique attribute values for each attribute
+    based on the examples provided
+
+    Args:
+        exs (list): The examples to go through
+    """
+    for attrib in attributes:
+        values = set([list(ex.values())[0][attrib] for ex in exs])
+        unique_attrib_vals[attrib] = values
+
 if __name__ == "__main__":
-    # print(majority(examples))
-    print(max_importance(attributes, examples))
+    # read input file and extract attributes / outputs
+    read_file(filename="data.dat")
+
+    # get unique values for each attribute (should be just T / F)
+    get_unique_attrib_vals(exs=examples)
+
+    print(build_dt(exs=examples, attribs=attributes))

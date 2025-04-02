@@ -1,6 +1,7 @@
 class Node:
-    def __init__(self, attribute, children: list):
+    def __init__(self, attribute, examples: list, children: list):
         self.attribute = attribute
+        self.examples = examples
         self.children = children
 
     def add_child(self, node):
