@@ -64,16 +64,23 @@ def build_dt(exs, attribs, parent_exs = None):
         _type_: _description_
     """
     res = check_classification(exs)
+    print(res)
     
+    # base case: if no examples left, return majority value of parent examples
     if (len(exs) == 0):
-        print("a")
-        return majority(parent_exs)
+        maj = majority(parent_exs)
+        return Node(attribute=None, examples=[], children=[], value=maj)
+    
+    # base case: if all examples of the same classification, return the classification
     elif (res):
-        print("b")
-        return res
+        return Node(attribute=None, examples=examples, children=None, value=res)
+    
+    # base case: if there are no more attributes to split on, return majority value of examples
     elif (len(attribs) == 0):
-        print("c")
-        return majority(exs)
+        maj = majority(exs)
+        return Node(attribute=None, examples=examples, children=[], value=maj)
+    
+    # otherwise, find best attribute to split on
     else:
         # find attribute of max importance
         A = max_importance(attribs, examples)
@@ -84,15 +91,18 @@ def build_dt(exs, attribs, parent_exs = None):
         # get unique values of A
         values = unique_attrib_vals[A]
 
+        # next tree should not consider attribute A
+        split_attributes = attribs[:]
+        split_attributes.remove(A)
+
         # iterate through values, recursively build subtrees
         for v in values:
             split_exs = [ex for ex in exs if list(ex.values())[0][A] == v]
-            split_attributes = attributes[:].remove(A)
             subtree = build_dt(exs=split_exs, attribs=split_attributes, parent_exs=examples)
-            # print([list(ex.values())[0][A] for ex in split_exs])
+            subtree.value = v
+            tree.add_child(subtree)
 
         return tree
-
 
 def max_importance(attribs, exs):
     max_attrib = None
@@ -158,6 +168,9 @@ def check_classification(exs: list):
         str: the classification if every example is the same classification
         None: one or more classifications differ
     """
+    if (not exs):
+        return None
+    
     check = list(exs[0].keys())[0]
 
     for ex in exs:
@@ -265,6 +278,7 @@ if __name__ == "__main__":
     # read input file and extract attributes / outputs
     read_file(filename="data.dat")
 
+    # print(majority(exs=examples))
     # get unique values for each attribute (should be just T / F)
     get_unique_attrib_vals(exs=examples)
 
