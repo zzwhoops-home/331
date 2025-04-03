@@ -119,7 +119,20 @@ def visualize_dt(node, graph=None, parent_name=None, edge_label=None):
     if (node.attribute is not None):
         label = f"{node.attribute}: {len(node.examples)}"
     else:
-        label = f"Leaf: {node.label} ({len(node.examples)})"
+        # count # of each class for label
+        classes = {}
+        for ex in node.examples:
+            check = list(ex.keys())[0]
+            if (check not in classes):
+                classes[check] = 1
+            else:
+                classes[check] += 1
+
+        classes_str = "("
+        for key, value in classes.items():
+            classes_str += f"{key}: {value}, "
+        classes_str += f"nk: {len(node.examples)})"
+        label = f"Leaf: {node.label} {classes_str}"
 
     graph.node(name=node_name, label=label)
 
@@ -309,7 +322,8 @@ if __name__ == "__main__":
     # get unique values for each attribute (should be just T / F)
     get_unique_attrib_vals(exs=examples)
 
-    dt = build_dt(exs=examples, attribs=attributes, max_depth=2)
+    max_depth = 2
+    dt = build_dt(exs=examples, attribs=attributes, max_depth=max_depth)
 
     dt_graph = visualize_dt(dt)
-    dt_graph.render('T/F Decision Tree', view=True)
+    dt_graph.render(f'{max_depth + 1}-layer Decision Tree', view=True)
