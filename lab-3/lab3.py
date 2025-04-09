@@ -6,10 +6,14 @@ from graphviz import Digraph
 
 # get command line args
 args = sys.argv
-data = args[1]
+examples_path = args[1] # path to training/test set
+features_path = args[2] # path to set of features
+out_path = args[3] # the path the trained model should be output to
+learning_type = args[4] # 'dt' or 'ada'
 
 examples = []
-attributes = []
+attributes_names = None
+attributes_key = None
 unique_attrib_vals = {}
 ex_count = {}
 total_count = 0
@@ -17,24 +21,43 @@ total_count = 0
 POS_EX = "A"
 NEG_EX = "B"
 
-def read_file(filename: str):
+def read_file():
     """Helper function to read in file and load attributes
-
-    Args:
-        filename (str): Path to file
     """
     global examples
     global total_count
-    global attributes
+    global attributes_names
+    global attributes_key
 
-    with open(filename, "r") as f:
+    # get attributes
+    with open(features_path, "r") as f:
+        lines = f.readlines()
+
+        # attributes can be numbered from 0 to # attributes - 1
+        attributes = [i for i in range(len(lines))]
+
+        # add actual attribute names for later reference
+        attributes_names = [line.replace("\n", "") for line in lines]
+
+        # create dictionary from two arrays
+        attributes_key = dict(zip(attributes, attributes_names))
+
+    with open(examples_path, "r") as f:
         lines = f.readlines()
 
         # for each example, format as {classification: [attributes]}
         for line in lines:
-            line_list = line.strip().split(" ")
-            attribs = line_list[:-1]
-            result = line_list[-1]
+            line_list = line.strip().split("|")
+            result = line_list[0]
+            words = line_list[1]
+
+            attribs = []
+            # append to attributes based on true or false (detection of substring)
+            for name in attributes_names:
+                if name in words:
+                    attribs.append(True)
+                else:
+                    attribs.append(False)
 
             examples.append({
                 result: attribs
@@ -49,9 +72,6 @@ def read_file(filename: str):
         # get total count
         total_count = sum([i for i in ex_count.values()])
 
-        # attributes can be numbered from 0 to # attributes - 1
-        attribute_count = len(list(examples[0].values())[0])
-        attributes = [i for i in range(attribute_count)]
 
 def build_dt(exs, attribs, parent_exs=None, depth=0, max_depth=None):
     """Builds a decision tree from a list of examples, attributes, and parent examples
@@ -317,13 +337,14 @@ def get_unique_attrib_vals(exs: list):
 
 if __name__ == "__main__":
     # read input file and extract attributes / outputs
-    read_file(filename="data.dat")
+    read_file()
+
     # print(majority(exs=examples))
     # get unique values for each attribute (should be just T / F)
     get_unique_attrib_vals(exs=examples)
 
     max_depth = 2
-    dt = build_dt(exs=examples, attribs=attributes, max_depth=max_depth)
+    dt = build_dt(exs=examples, attribs=attributes_names, max_depth=max_depth)
 
     dt_graph = visualize_dt(dt)
     dt_graph.render(f'{max_depth + 1}-layer Decision Tree', view=True)
