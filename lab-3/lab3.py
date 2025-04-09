@@ -4,6 +4,8 @@ import math
 import random
 from graphviz import Digraph
 
+# FOR DEBUGGING USE:
+# lab-3/train.dat lab-3/features.txt lab-3/models/best.model dt
 # get command line args
 args = sys.argv
 examples_path = args[1] # path to training/test set
@@ -18,8 +20,8 @@ unique_attrib_vals = {}
 ex_count = {}
 total_count = 0
 
-POS_EX = "A"
-NEG_EX = "B"
+POS_EX = "en"
+NEG_EX = "nl"
 
 def read_file():
     """Helper function to read in file and load attributes
@@ -40,7 +42,7 @@ def read_file():
         attributes_names = [line.replace("\n", "") for line in lines]
 
         # create dictionary from two arrays
-        attributes_key = dict(zip(attributes, attributes_names))
+        attributes_key = dict(zip(attributes_names, attributes))
 
     with open(examples_path, "r") as f:
         lines = f.readlines()
@@ -121,7 +123,7 @@ def build_dt(exs, attribs, parent_exs=None, depth=0, max_depth=None):
 
     # iterate through values, recursively build subtrees
     for v in values:
-        split_exs = [ex for ex in exs if list(ex.values())[0][A] == v]
+        split_exs = [ex for ex in exs if list(ex.values())[0][attributes_key[A]] == v]
         subtree = build_dt(exs=split_exs, attribs=split_attributes, parent_exs=examples, depth=depth + 1, max_depth=max_depth)
         if (subtree.value is None):
             subtree.value = v
@@ -151,7 +153,7 @@ def visualize_dt(node, graph=None, parent_name=None, edge_label=None):
         classes_str = "("
         for key, value in classes.items():
             classes_str += f"{key}: {value}, "
-        classes_str += f"nk: {len(node.examples)})"
+        classes_str += f"#k: {len(node.examples)})"
         label = f"Leaf: {node.label} {classes_str}"
 
     graph.node(name=node_name, label=label)
@@ -185,7 +187,7 @@ def importance(a, exs):
     # count current set pos/neg examples
     for ex in exs:
         # split apart into subsets
-        attribute = list(ex.values())[0][a]
+        attribute = list(ex.values())[0][attributes_key[a]]
         if (attribute not in subsets):
             subsets[attribute] = [ex]
         else:
@@ -328,13 +330,15 @@ def get_unique_attrib_vals(exs: list):
     """Gets a list of unique attribute values for each attribute
     based on the examples provided
 
+    Probably unnecessary, since we are working always with True or False
+
     Args:
         exs (list): The examples to go through
     """
-    for attrib in attributes:
-        values = set([list(ex.values())[0][attrib] for ex in exs])
+    for attrib in attributes_names:
+        values = set([list(ex.values())[0][attributes_key[attrib]] for ex in exs])
         unique_attrib_vals[attrib] = values
-
+    
 if __name__ == "__main__":
     # read input file and extract attributes / outputs
     read_file()
@@ -343,7 +347,7 @@ if __name__ == "__main__":
     # get unique values for each attribute (should be just T / F)
     get_unique_attrib_vals(exs=examples)
 
-    max_depth = 2
+    max_depth = 6
     dt = build_dt(exs=examples, attribs=attributes_names, max_depth=max_depth)
 
     dt_graph = visualize_dt(dt)
