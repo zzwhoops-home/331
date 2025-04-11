@@ -3,6 +3,7 @@ from helpers import Node
 import math
 import random
 from graphviz import Digraph
+import pickle
 
 # FOR DEBUGGING USE:
 # lab-3/train.dat lab-3/features.txt lab-3/models/best.model dt
@@ -274,7 +275,6 @@ def majority(exs: list):
             majority_classes.append(key)
 
     choice = random.choice(majority_classes)
-    print(choice, count)
     return choice
 
 def remainder(pk: int, nk: int, p: int, n: int):
@@ -350,7 +350,7 @@ if __name__ == "__main__":
     # get unique values for each attribute (should be just T / F)
     get_unique_attrib_vals(exs=examples)
 
-    max_depth = 3
+    max_depth = 6
     dt = build_dt(exs=examples, attribs=attributes_names, max_depth=max_depth)
 
     dt_graph = visualize_dt(dt)
