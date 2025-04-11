@@ -1,7 +1,8 @@
 import requests
 
 frag_list = []
-LANGUAGE = "nl"
+TOTAL = 1
+LANGUAGE = "en"
 
 # insert in file
 # with open(f"test_{LANGUAGE}.txt", "r+") as f:
@@ -10,7 +11,7 @@ LANGUAGE = "nl"
 #     for line in lines:
 #         f.writelines("en|" + line)
 
-# with open(f"test_{LANGUAGE}.txt", "r") as f:
+# with open(f"test_{LANGUAGE}.txt", "r", encoding="utf-8") as f:
 #     data = f.readlines()
 #     for i in range(len(data)):
 #         length = len(data[i].split(" "))
@@ -19,7 +20,7 @@ LANGUAGE = "nl"
 
 # exit()
 
-for i in range(10):
+for i in range(TOTAL):
     print(i)
     # Get the random article URL
     article = requests.get(f"https://{LANGUAGE}.wikipedia.org/wiki/Special:Random")
@@ -39,14 +40,17 @@ for i in range(10):
         continue
     # get all fragments that are 15 words in length
     fragments = [" ".join(fragment.split(" ")[:15]) for fragment in extract.split("\n") if len(fragment.split(" ")) >= 15]
-    print(fragments)
     frag_list.append(fragments)
 
-with open(f"test_{LANGUAGE}.txt", "ab") as f:
+with open(f"test_{LANGUAGE}.txt", "a", encoding="utf-8") as f:
+    count = 0
     for frag in frag_list:
+        if (count > 500):
+            break
         try:
-            to_write = "\n".join(frag) + "\n"
-            for line in to_write:
-                f.write(f"{LANGUAGE}|" + line)
+            count += len(frag)
+            print(f"Total lines: {count}")
+            to_write = "\n".join([f"{LANGUAGE}|" + line for line in frag]) + "\n"
+            f.writelines(to_write)
         except Exception as e:
             print(e)
