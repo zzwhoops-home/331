@@ -341,17 +341,73 @@ def get_unique_attrib_vals(exs: list):
     for attrib in attributes_names:
         values = set([list(ex.values())[0][attributes_key[attrib]] for ex in exs])
         unique_attrib_vals[attrib] = values
+
+def process_and_classify(node: Node, example: list[bool]):
+    """Processes data and calls recursive function to classify the set of data
+
+    Args:
+        node (Node): a Node in the decision tree
+        example (str): the example string to classify 
+    """
+    # iterate through features, get True or False classification
+    attribs = []
+    for feature in attributes_names:
+        if (feature in string):
+            attribs.append(True)
+        else:
+            attribs.append(False)
+
+    # call recursive classify function and return result
+    return classify(node, attribs)
+
+def classify(node: Node, attribs: list[bool]):
+    """Does the actual classification steps recursively
+    Goes through decision tree until it reaches a leaf node
+
+    Args:
+        node (Node): a Node in the decision tree
+        attribs (list[bool]): a list of true/false values corresponding with whether or not features were present in a given string
+    """
+    # base case: return leaf node classification
+    if (node.label is not None):
+        return node.label
     
+    # get the attribute of the node and find its index
+    node_attrib_index = attributes_key[node.attribute]
+    # get True or False in the parameter list of attribute values
+    attrib_val = attribs[node_attrib_index]
+    
+    # find the child node
+    for child in node.children:
+        if (child.value == attrib_val):
+            return classify(child, attribs)
+
+    # fallback, throw an error
+    raise Exception("Warning: could not classify example!")
+
 if __name__ == "__main__":
     # read input file and extract attributes / outputs
     read_file()
 
-    # print(majority(exs=examples))
-    # get unique values for each attribute (should be just T / F)
+    # get unique values for each attribute (should be just POS and NEG example defined at the beginning of the file)
     get_unique_attrib_vals(exs=examples)
 
     max_depth = 6
     dt = build_dt(exs=examples, attribs=attributes_names, max_depth=max_depth)
 
-    dt_graph = visualize_dt(dt)
-    dt_graph.render(f'{max_depth + 1}-layer Decision Tree', view=True)
+    # serialize for later use
+    with open(out_path, "wb") as f:
+        pickle.dump(dt, f)
+
+    # string = "De kat liep rustig door de tuin terwijl de vogels zongen in de hoge bomen."
+    string = "This is a string that I'm using to test this function. Does it work? idk."
+    print(process_and_classify(dt, string))
+
+    # load serialized model
+    # with open(out_path, "rb") as f:
+    #     dt = pickle.load(f)
+
+    # dt_graph = visualize_dt(dt)
+    # dt_graph.render(f'{max_depth + 1}-layer Decision Tree', view=True)
+
+
