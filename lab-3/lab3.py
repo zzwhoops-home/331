@@ -32,7 +32,7 @@ def read_file():
     global attributes_key
 
     # get attributes
-    with open(features_path, "r") as f:
+    with open(features_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
         # attributes can be numbered from 0 to # attributes - 1
@@ -44,7 +44,7 @@ def read_file():
         # create dictionary from two arrays
         attributes_key = dict(zip(attributes_names, attributes))
 
-    with open(examples_path, "r") as f:
+    with open(examples_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
         # for each example, format as {classification: [attributes]}
@@ -267,11 +267,14 @@ def majority(exs: list):
     majority_classes = []
     for key, value in count.items():
         # if the count is greater or equal, replace
-        if (value >= majority_count):
+        if (value > majority_count):
             majority_count = value
+            majority_classes = [key]
+        elif (value == majority_count):
             majority_classes.append(key)
 
     choice = random.choice(majority_classes)
+    print(choice, count)
     return choice
 
 def remainder(pk: int, nk: int, p: int, n: int):
@@ -347,7 +350,7 @@ if __name__ == "__main__":
     # get unique values for each attribute (should be just T / F)
     get_unique_attrib_vals(exs=examples)
 
-    max_depth = 6
+    max_depth = 3
     dt = build_dt(exs=examples, attribs=attributes_names, max_depth=max_depth)
 
     dt_graph = visualize_dt(dt)
