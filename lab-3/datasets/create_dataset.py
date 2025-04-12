@@ -1,17 +1,18 @@
 import requests
 
 frag_list = []
-TOTAL = 1
-LANGUAGE = "en"
+TOTAL = 10
+TYPE = "test" # 'test' or 'train'
+LANGUAGE = "nl" # 'en' or 'nl'
 
 # insert in file
-# with open(f"test_{LANGUAGE}.txt", "r+") as f:
+# with open(f"{TYPE}_{LANGUAGE}.txt", "r+") as f:
 #     lines = f.readlines()
 
 #     for line in lines:
 #         f.writelines("en|" + line)
 
-# with open(f"test_{LANGUAGE}.txt", "r", encoding="utf-8") as f:
+# with open(f"datasets/{TYPE}_{LANGUAGE}.txt", "r", encoding="utf-8") as f:
 #     data = f.readlines()
 #     for i in range(len(data)):
 #         length = len(data[i].split(" "))
@@ -42,7 +43,7 @@ for i in range(TOTAL):
     fragments = [" ".join(fragment.split(" ")[:15]) for fragment in extract.split("\n") if len(fragment.split(" ")) >= 15]
     frag_list.append(fragments)
 
-with open(f"test_{LANGUAGE}.txt", "a", encoding="utf-8") as f:
+with open(f"datasets/{TYPE}_{LANGUAGE}.txt", "a", encoding="utf-8") as f:
     count = 0
     for frag in frag_list:
         if (count > 500):
@@ -50,7 +51,7 @@ with open(f"test_{LANGUAGE}.txt", "a", encoding="utf-8") as f:
         try:
             count += len(frag)
             print(f"Total lines: {count}")
-            to_write = "\n".join([f"{LANGUAGE}|" + line for line in frag]) + "\n"
+            to_write = "\n".join([f"{f"{LANGUAGE}|" if TYPE == "train" else ""}" + line for line in frag]) + "\n"
             f.writelines(to_write)
         except Exception as e:
             print(e)
