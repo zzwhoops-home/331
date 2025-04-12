@@ -3,7 +3,7 @@ import requests
 frag_list = []
 TOTAL = 10
 TYPE = "test" # 'test' or 'train'
-LANGUAGE = "nl" # 'en' or 'nl'
+LANGUAGE = "en" # 'en' or 'nl'
 
 # insert in file
 # with open(f"{TYPE}_{LANGUAGE}.txt", "r+") as f:

@@ -2,7 +2,7 @@ import sys
 from helpers import Node
 import math
 import random
-from graphviz import Digraph
+# from graphviz import Digraph
 import pickle
 
 # FOR DEBUGGING USE:
@@ -88,7 +88,7 @@ def read_train_examples_file():
         # get total count
         total_count = sum([i for i in ex_count.values()])
 
-def read_test_examples_file():
+def read_test_examples_file(dt):
     """Helper function to read in file and load test examples
     """
     global examples
@@ -97,7 +97,18 @@ def read_test_examples_file():
 
     with open(examples_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
-        print(lines)
+
+        nl = 0
+        en = 0
+        for line in lines:
+            classification = process_and_classify(dt, line)
+            print(classification)
+            if (classification == "nl"):
+                nl += 1
+            elif (classification == "en"):
+                en += 1
+
+        print(f"\nEN: {en}, NL: {nl}")
 
 def build_dt(exs, attribs, parent_exs=None, depth=0, max_depth=None):
     """Builds a decision tree from a list of examples, attributes, and parent examples
@@ -155,41 +166,41 @@ def build_dt(exs, attribs, parent_exs=None, depth=0, max_depth=None):
 
     return tree
 
-def visualize_dt(node, graph=None, parent_name=None, edge_label=None):
-    if graph is None:
-        graph = Digraph(format='png')
-        graph.attr(size='96')
+# def visualize_dt(node, graph=None, parent_name=None, edge_label=None):
+#     if graph is None:
+#         graph = Digraph(format='png')
+#         graph.attr(size='96')
 
-    node_name = str(id(node))
+#     node_name = str(id(node))
 
-    if (node.attribute is not None):
-        label = f"{node.attribute}: {len(node.examples)}"
-    else:
-        # count # of each class for label
-        classes = {}
-        for ex in node.examples:
-            check = list(ex.keys())[0]
-            if (check not in classes):
-                classes[check] = 1
-            else:
-                classes[check] += 1
+#     if (node.attribute is not None):
+#         label = f"{node.attribute}: {len(node.examples)}"
+#     else:
+#         # count # of each class for label
+#         classes = {}
+#         for ex in node.examples:
+#             check = list(ex.keys())[0]
+#             if (check not in classes):
+#                 classes[check] = 1
+#             else:
+#                 classes[check] += 1
 
-        classes_str = "("
-        for key, value in classes.items():
-            classes_str += f"{key}: {value}, "
-        classes_str += f"#k: {len(node.examples)})"
-        label = f"Leaf: {node.label} {classes_str}"
+#         classes_str = "("
+#         for key, value in classes.items():
+#             classes_str += f"{key}: {value}, "
+#         classes_str += f"#k: {len(node.examples)})"
+#         label = f"Leaf: {node.label} {classes_str}"
 
-    graph.node(name=node_name, label=label)
+#     graph.node(name=node_name, label=label)
 
-    if (parent_name):
-        graph.edge(tail_name=parent_name, head_name=node_name, label=edge_label)
+#     if (parent_name):
+#         graph.edge(tail_name=parent_name, head_name=node_name, label=edge_label)
 
-    if (node.children):
-        for child in node.children:
-            visualize_dt(node=child, graph=graph, parent_name=node_name, edge_label=str(child.value))
+#     if (node.children):
+#         for child in node.children:
+#             visualize_dt(node=child, graph=graph, parent_name=node_name, edge_label=str(child.value))
 
-    return graph
+#     return graph
 
 def max_importance(attribs, exs):
     max_attrib = None
@@ -375,7 +386,7 @@ def process_and_classify(node: Node, example: list[bool]):
     # iterate through features, get True or False classification
     attribs = []
     for feature in attributes_names:
-        if (feature in string):
+        if (feature in example):
             attribs.append(True)
         else:
             attribs.append(False)
@@ -423,8 +434,8 @@ if __name__ == "__main__":
         max_depth = 6
         dt = build_dt(exs=examples, attribs=attributes_names, max_depth=max_depth)
 
-        dt_graph = visualize_dt(dt)
-        dt_graph.render(f'{max_depth + 1}-layer Decision Tree', view=True)
+        # dt_graph = visualize_dt(dt)
+        # dt_graph.render(f'{max_depth + 1}-layer Decision Tree', view=False)
 
         # serialize for later use
         with open(out_path, "wb") as f:
@@ -435,8 +446,8 @@ if __name__ == "__main__":
             dt = pickle.load(f)
 
         # read in examples
-        read_test_examples_file()
+        read_test_examples_file(dt)
 
         # string = "De kat liep rustig door de tuin terwijl de vogels zongen in de hoge bomen."
-        string = "This is a string that I'm using to test this function. Does it work? idk."
-        print(process_and_classify(dt, string))
+        # string = "This is a string that I'm using to test this function. Does it work? idk."
+        # print(process_and_classify(dt, string))
