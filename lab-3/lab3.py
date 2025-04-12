@@ -9,10 +9,18 @@ import pickle
 # lab-3/train.dat lab-3/features.txt lab-3/models/best.model dt
 # get command line args
 args = sys.argv
-examples_path = args[1] # path to training/test set
-features_path = args[2] # path to set of features
-out_path = args[3] # the path the trained model should be output to
-learning_type = args[4] # 'dt' or 'ada'
+run_type = args[1] # either 'train' to train on dt or ada, or 'predict' to predict on examples
+
+# check different params based on type
+if (run_type == "train"):
+    examples_path = args[2] # path to training set
+    features_path = args[3] # path to set of features
+    out_path = args[4] # the path the trained model should be output to
+    learning_type = args[5] # 'dt' or 'ada'
+elif (run_type == "predict"):
+    examples_path = args[2] # path to test set
+    features_path = args[3] # path to set of features
+    hypo_path = args[4]
 
 examples = []
 attributes_names = None
@@ -24,11 +32,9 @@ total_count = 0
 POS_EX = "en"
 NEG_EX = "nl"
 
-def read_file():
+def read_features_file():
     """Helper function to read in file and load attributes
     """
-    global examples
-    global total_count
     global attributes_names
     global attributes_key
 
@@ -44,6 +50,13 @@ def read_file():
 
         # create dictionary from two arrays
         attributes_key = dict(zip(attributes_names, attributes))
+
+def read_train_examples_file():
+    """Helper function to read in file and load examples
+    """
+    global examples
+    global total_count
+    global attributes_names
 
     with open(examples_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
@@ -75,6 +88,16 @@ def read_file():
         # get total count
         total_count = sum([i for i in ex_count.values()])
 
+def read_test_examples_file():
+    """Helper function to read in file and load test examples
+    """
+    global examples
+    global total_count
+    global attributes_names
+
+    with open(examples_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+        print(lines)
 
 def build_dt(exs, attribs, parent_exs=None, depth=0, max_depth=None):
     """Builds a decision tree from a list of examples, attributes, and parent examples
@@ -386,28 +409,34 @@ def classify(node: Node, attribs: list[bool]):
     raise Exception("Warning: could not classify example!")
 
 if __name__ == "__main__":
-    # read input file and extract attributes / outputs
-    read_file()
+    # read in attributes from features file
+    read_features_file()
 
-    # get unique values for each attribute (should be just POS and NEG example defined at the beginning of the file)
-    get_unique_attrib_vals(exs=examples)
+    # if we are training, run training model
+    if (run_type == "train"):
+        # read input file and extract attributes / outputs
+        read_train_examples_file()
 
-    max_depth = 6
-    dt = build_dt(exs=examples, attribs=attributes_names, max_depth=max_depth)
+        # get unique values for each attribute (should be just POS and NEG example defined at the beginning of the file)
+        get_unique_attrib_vals(exs=examples)
 
-    # serialize for later use
-    with open(out_path, "wb") as f:
-        pickle.dump(dt, f)
+        max_depth = 6
+        dt = build_dt(exs=examples, attribs=attributes_names, max_depth=max_depth)
 
-    # string = "De kat liep rustig door de tuin terwijl de vogels zongen in de hoge bomen."
-    string = "This is a string that I'm using to test this function. Does it work? idk."
-    print(process_and_classify(dt, string))
+        dt_graph = visualize_dt(dt)
+        dt_graph.render(f'{max_depth + 1}-layer Decision Tree', view=True)
 
-    # load serialized model
-    # with open(out_path, "rb") as f:
-    #     dt = pickle.load(f)
+        # serialize for later use
+        with open(out_path, "wb") as f:
+            pickle.dump(dt, f)
+    elif (run_type == "predict"):
+        # load serialized model
+        with open(hypo_path, "rb") as f:
+            dt = pickle.load(f)
 
-    # dt_graph = visualize_dt(dt)
-    # dt_graph.render(f'{max_depth + 1}-layer Decision Tree', view=True)
+        # read in examples
+        read_test_examples_file()
 
-
+        # string = "De kat liep rustig door de tuin terwijl de vogels zongen in de hoge bomen."
+        string = "This is a string that I'm using to test this function. Does it work? idk."
+        print(process_and_classify(dt, string))
