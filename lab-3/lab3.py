@@ -475,7 +475,7 @@ def ada(exs, stumps=50, ensemble_depth=1):
         # build decision tree with given depth
         hypotheses.append(None)
         hypotheses_weights.append(None)
-        hypotheses[k] = build_dt(exs=examples, attribs=attributes_names, max_depth=ensemble_depth)
+        hypotheses[k] = build_dt(exs=exs, attribs=attributes_names, max_depth=ensemble_depth)
         # initial error is 0
         error = 0
 
