@@ -2,12 +2,14 @@ import sys
 from helpers import Node
 import math
 import random
-# from graphviz import Digraph
 import pickle
+# from graphviz import Digraph
 
 # FOR DEBUGGING USE:
-# lab-3/train.dat lab-3/features.txt lab-3/models/best.model dt
-# lab-3/train.dat lab-3/features.txt lab-3/models/best.model ada
+# train lab-3/train.dat lab-3/features.txt lab-3/models/best.model dt
+# train lab-3/train.dat lab-3/features.txt lab-3/models/best.model ada
+# predict lab-3/datasets/test_en.txt lab-3/features.txt lab-3/models/best.model
+# predict lab-3/datasets/test_nl.txt lab-3/features.txt lab-3/models/best.model
 # get command line args
 args = sys.argv
 run_type = args[1] # either 'train' to train on dt or ada, or 'predict' to predict on examples
@@ -107,7 +109,7 @@ def read_test_examples_file(type, dt=None, hypotheses=None, hypotheses_weights=N
                 elif (classification == "en"):
                     en += 1
 
-            # print(f"\nEN: {en}, NL: {nl}")
+            print(f"\nEN: {en}, NL: {nl}")
         elif (type == "ada"):
             nl = 0
             en = 0
@@ -119,7 +121,7 @@ def read_test_examples_file(type, dt=None, hypotheses=None, hypotheses_weights=N
                 elif (classification == "en"):
                     en += 1
 
-            # print(f"\nEN: {en}, NL: {nl}")
+            print(f"\nEN: {en}, NL: {nl} ada")
 
 def build_dt(exs, attribs, parent_exs=None, depth=0, max_depth=None):
     """Builds a decision tree from a list of examples, attributes, and parent examples
@@ -430,7 +432,7 @@ def process_and_classify_ada(hypotheses: list[Node], hypotheses_weights: list[fl
         if (value > majority_vote):
             majority_class = key
             majority_vote = value
-    
+
     return majority_class
 
 def classify(node: Node, attribs: list[bool]):
@@ -458,7 +460,7 @@ def classify(node: Node, attribs: list[bool]):
     # fallback, throw an error
     raise Exception("Warning: could not classify example!")
 
-def ada(exs, ensemble_depth=2):
+def ada(exs, ensemble_depth=1):
     global example_weights, hypotheses, hypotheses_weights
     total_h = len(hypotheses)
 
@@ -486,6 +488,7 @@ def ada(exs, ensemble_depth=2):
             
         # break from loop if error > 1/2 (error too high for hypothesis)
         if (error > 1 / 2):
+            hypotheses[k] = None
             break
         # error is min(err, 1 - epsilon)
         error = min(error, 1 - epsilon)
@@ -507,12 +510,11 @@ def ada(exs, ensemble_depth=2):
         hypotheses_weights[k] = (1 / 2) * math.log((1 - error) / error)
 
         # return weighted majority of hypothesis predictions
-        return weighted_majority()
+        # return weighted_majority()
+
+    hypotheses = [h for h in hypotheses if h is not None]
+    hypotheses_weights = [h_wt for h_wt in hypotheses_weights if h_wt is not None]
         
-def weighted_majority():
-    global hypotheses, hypotheses_weights
-
-
 def normalize_weights():
     """Normalizes the weights (global vars) of the examples when AdaBoosting
     """
@@ -542,7 +544,7 @@ if __name__ == "__main__":
         dt = build_dt(exs=examples, attribs=attributes_names, max_depth=MAX_DEPTH)
 
         if (learning_type == "ada"):
-            ADA_TREES = 4
+            ADA_TREES = 10
             
             # populate hypotheses if needed
             if (not hypotheses):
@@ -551,7 +553,7 @@ if __name__ == "__main__":
 
             ada(exs=examples)
         # dt_graph = visualize_dt(dt)
-        # dt_graph.render(f'{max_depth + 1}-layer Decision Tree', view=False)
+        # dt_graph.render(f'{MAX_DEPTH + 1}-layer Decision Tree', view=False)
 
         # serialize for later use
         to_save = None
@@ -587,7 +589,7 @@ if __name__ == "__main__":
             # get hypotheses and their weights
             hypotheses = data["hypotheses"]
             hypotheses_weights = data["hypotheses_weights"]
-
+            
             # print out classifications with adaboosted ensemble model
             read_test_examples_file(type=dt_type, hypotheses=hypotheses, hypotheses_weights=hypotheses_weights)
 
