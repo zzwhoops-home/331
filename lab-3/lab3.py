@@ -513,8 +513,8 @@ def ada(exs, stumps=50, ensemble_depth=1):
         # give more weight to accurate h[k]: hypothesis_weights[k] = (1/2) * log((1 - error) / error)
         hypotheses_weights[k] = (1 / 2) * math.log((1 - error) / error)
 
-        # return weighted majority of hypothesis predictions
-        # return weighted_majority()
+    hypotheses = [h for h in hypotheses if h is not None]
+    hypotheses_weights = [h_wt for h_wt in hypotheses_weights if h_wt is not None]
 
 def normalize_weights():
     """Normalizes the weights (global vars) of the examples when AdaBoosting
