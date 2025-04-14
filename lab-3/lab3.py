@@ -20,6 +20,9 @@ if (run_type == "train"):
     features_path = args[3] # path to set of features
     out_path = args[4] # the path the trained model should be output to
     learning_type = args[5] # 'dt' or 'ada'
+    arg_6 = None
+    if (len(args) == 7):
+        arg_6 = int(args[6]) # max depth or # of stumps
 elif (run_type == "predict"):
     examples_path = args[2] # path to test set
     features_path = args[3] # path to set of features
@@ -109,7 +112,7 @@ def read_test_examples_file(type, dt=None, hypotheses=None, hypotheses_weights=N
                 elif (classification == "en"):
                     en += 1
 
-            print(f"\nEN: {en}, NL: {nl}")
+            # print(f"\nEN: {en}, NL: {nl}")
         elif (type == "ada"):
             nl = 0
             en = 0
@@ -121,7 +124,7 @@ def read_test_examples_file(type, dt=None, hypotheses=None, hypotheses_weights=N
                 elif (classification == "en"):
                     en += 1
 
-            print(f"\nEN: {en}, NL: {nl} ada")
+            # print(f"\nEN: {en}, NL: {nl} ada")
 
 def build_dt(exs, attribs, parent_exs=None, depth=0, max_depth=None):
     """Builds a decision tree from a list of examples, attributes, and parent examples
@@ -540,11 +543,11 @@ if __name__ == "__main__":
         if (example_weights == None):
             example_weights = [1 / total_count for i in range(total_count)]
         
-        MAX_DEPTH = 6
-        dt = build_dt(exs=examples, attribs=attributes_names, max_depth=MAX_DEPTH)
-
+        if (learning_type == "dt"):
+            MAX_DEPTH = arg_6 if arg_6 else 6 # get user max depth, otherwise depth 6 
+            dt = build_dt(exs=examples, attribs=attributes_names, max_depth=MAX_DEPTH)
         if (learning_type == "ada"):
-            ADA_TREES = 10
+            ADA_TREES = arg_6 if arg_6 else 50 # get user # stumps, otherwise 50 stumps
             
             # populate hypotheses if needed
             if (not hypotheses):
@@ -589,7 +592,7 @@ if __name__ == "__main__":
             # get hypotheses and their weights
             hypotheses = data["hypotheses"]
             hypotheses_weights = data["hypotheses_weights"]
-            
+
             # print out classifications with adaboosted ensemble model
             read_test_examples_file(type=dt_type, hypotheses=hypotheses, hypotheses_weights=hypotheses_weights)
 
