@@ -36,8 +36,8 @@ attributes_key = None
 unique_attrib_vals = {}
 total_count = 0
 ex_count = {}
-hypotheses = None
-hypotheses_weights = None
+hypotheses = []
+hypotheses_weights = []
 
 POS_EX = "en"
 NEG_EX = "nl"
@@ -227,7 +227,7 @@ def max_importance(attribs, exs):
         if (val > max_attrib_importance):
             max_attrib_importance = val
             max_attrib = attrib
-    
+
     return max_attrib
 
 def importance(a, exs):
@@ -463,17 +463,18 @@ def classify(node: Node, attribs: list[bool]):
     # fallback, throw an error
     raise Exception("Warning: could not classify example!")
 
-def ada(exs, ensemble_depth=1):
+def ada(exs, stumps=50, ensemble_depth=1):
     global example_weights, hypotheses, hypotheses_weights
-    total_h = len(hypotheses)
 
     # smallest possible # to prevent division-by-zero
     epsilon = sys.float_info.epsilon
     # track classification
     classification = None
 
-    for k in range(total_h):
+    for k in range(stumps):
         # build decision tree with given depth
+        hypotheses.append(None)
+        hypotheses_weights.append(None)
         hypotheses[k] = build_dt(exs=examples, attribs=attributes_names, max_depth=ensemble_depth)
         # initial error is 0
         error = 0
@@ -515,9 +516,6 @@ def ada(exs, ensemble_depth=1):
         # return weighted majority of hypothesis predictions
         # return weighted_majority()
 
-    hypotheses = [h for h in hypotheses if h is not None]
-    hypotheses_weights = [h_wt for h_wt in hypotheses_weights if h_wt is not None]
-        
 def normalize_weights():
     """Normalizes the weights (global vars) of the examples when AdaBoosting
     """
@@ -549,12 +547,7 @@ if __name__ == "__main__":
         if (learning_type == "ada"):
             ADA_TREES = arg_6 if arg_6 else 50 # get user # stumps, otherwise 50 stumps
             
-            # populate hypotheses if needed
-            if (not hypotheses):
-                hypotheses = [None for i in range(ADA_TREES)]
-                hypotheses_weights = [None for i in range(ADA_TREES)]
-
-            ada(exs=examples)
+            ada(exs=examples, stumps=ADA_TREES)
         # dt_graph = visualize_dt(dt)
         # dt_graph.render(f'{MAX_DEPTH + 1}-layer Decision Tree', view=False)
 
